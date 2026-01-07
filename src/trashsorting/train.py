@@ -1,8 +1,8 @@
 from trashsorting.model import Model
-from trashsorting.data import MyDataset
+from trashsorting.data import TrashNet
 
 def train():
-    dataset = MyDataset("data/raw")
+    dataset = TrashNet("data/raw")
     model = Model()
     # add rest of your training code here
 
