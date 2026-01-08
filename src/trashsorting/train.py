@@ -1,5 +1,5 @@
-from trashsorting.model import Model
-from trashsorting.data import TrashNet
+#from trashsorting.model import Model
+#from trashsorting.data import TrashNet
 
 def train():
     return
