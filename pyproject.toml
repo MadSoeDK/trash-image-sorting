@@ -20,6 +20,7 @@ requires-python = ">=3.12"
 dependencies = [
     "datasets>=3.2.0",
     "fastapi==0.115.6",
+    "loguru>=0.7.3",
     "pillow>=11.0.0",
     "timm>=1.0.12",
     "torch==2.6.0",
