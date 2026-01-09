@@ -46,6 +46,7 @@ def train():
     train_size = int(0.7 * total_size)
     val_size = int(0.15 * total_size)
     test_size = total_size - train_size - val_size
+    print(f"Dataset sizes - Train: {train_size}, Val: {val_size}, Test: {test_size}")
 
     #TODO: Implement the actual training loop here
 
