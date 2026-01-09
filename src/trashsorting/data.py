@@ -8,6 +8,7 @@ from torch.utils.data import Dataset, random_split
 from torchvision import transforms
 from typing import Any, cast
 
+
 class TrashData(Dataset):
     """PyTorch Dataset for TrashNet image classification.
 
@@ -181,8 +182,9 @@ class TrashData(Dataset):
         labels_tensor = torch.tensor(labels)
 
         split_name = self.split
-        torch.save(images_tensor, output_path / f"{split_name}_images.pt")
-        torch.save(labels_tensor, output_path / f"{split_name}_labels.pt")
+
+        torch.save(images_tensor, str(output_path / f"{split_name}_images.pt"))
+        torch.save(labels_tensor, str(output_path / f"{split_name}_labels.pt"))
 
         # Save metadata
         metadata = {
@@ -191,12 +193,12 @@ class TrashData(Dataset):
             "num_samples": len(self),
             "split": self.split,
         }
-        torch.save(metadata, output_path / f"{split_name}_metadata.pt")
+        torch.save(metadata, str(output_path / f"{split_name}_metadata.pt"))
 
         print(f"Preprocessing complete! Saved to {output_path}")
 
 
-def preprocess(data_path: Path, output_folder: Path) -> None:
+def preprocess(data_path: str = "data/raw", output_folder: str = "data/processed") -> None:
     """CLI command to preprocess the TrashNet dataset.
 
     Args:
@@ -204,7 +206,9 @@ def preprocess(data_path: Path, output_folder: Path) -> None:
         output_folder: Directory where preprocessed data will be saved.
     """
     print("Preprocessing data...")
-    dataset = TrashData(data_path, 'all', fraction=0.25)
+    data_path = Path(data_path)
+    output_folder = Path(output_folder)
+    dataset = TrashData(data_path, 'all')
     dataset.preprocess(output_folder)
 
 
