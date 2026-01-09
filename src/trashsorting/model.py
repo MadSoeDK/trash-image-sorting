@@ -5,7 +5,7 @@ import timm
 
 
 class TrashModel(LightningModule):
-    def __init__(self, model_name="mobilenetv3_small_100", num_classes: int = 10, lr: float = 1e-3, pretrained: bool = True):
+    def __init__(self, model_name="mobilenetv3_small_100", num_classes: int = 6, lr: float = 1e-3, pretrained: bool = True):
         super().__init__()
         self.save_hyperparameters()
         # Create model from timm
