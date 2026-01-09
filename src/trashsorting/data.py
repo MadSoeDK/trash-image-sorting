@@ -203,9 +203,56 @@ def preprocess(data_path: Path, output_folder: Path) -> None:
         data_path: Root directory for raw dataset cache.
         output_folder: Directory where preprocessed data will be saved.
     """
-    print("Preprocessing data...")
-    dataset = TrashNet(data_path, 'all', fraction=0.25)
-    dataset.preprocess(output_folder)
+    # Load parameters from params.yaml for DVC
+    import yaml
+    try:
+        with open("params.yaml", "r") as f:
+            params = yaml.safe_load(f)
+        fraction = params["data"]["fraction"]
+        seed = params["data"]["seed"]
+    except FileNotFoundError:
+        # Default values if params.yaml doesn't exist
+        fraction = 0.25
+        seed = 42
+
+    print(f"Preprocessing data with fraction={fraction}, seed={seed}...")
+    dataset = TrashNet(data_path, 'all', fraction=fraction, seed=seed)
+
+    # Save all data in a single file for easier loading
+    output_path = Path(output_folder)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    print(f"Processing {len(dataset)} samples to {output_path}...")
+
+    images = []
+    labels = []
+
+    for idx in range(len(dataset)):
+        image_tensor, label = dataset[idx]
+        images.append(image_tensor)
+        labels.append(label)
+
+        if (idx + 1) % 100 == 0:
+            print(f"  Processed {idx + 1}/{len(dataset)} samples...")
+
+    # Stack and save as PyTorch tensors
+    images_tensor = torch.stack(images)
+    labels_tensor = torch.tensor(labels)
+
+    torch.save(images_tensor, output_path / "all_images.pt")
+    torch.save(labels_tensor, output_path / "all_labels.pt")
+
+    # Save metadata
+    metadata = {
+        "classes": dataset.classes,
+        "class_to_idx": dataset.class_to_idx,
+        "num_samples": len(dataset),
+        "fraction": fraction,
+        "seed": seed,
+    }
+    torch.save(metadata, output_path / "all_metadata.pt")
+
+    print(f"✅ Preprocessing complete! Saved to {output_path}")
 
 
 if __name__ == "__main__":

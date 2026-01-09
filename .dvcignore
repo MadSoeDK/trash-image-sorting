@@ -1,0 +1,5 @@
+# Add patterns here to exclude them from DVC tracking
+# For example:
+# *.log
+# .DS_Store
+
