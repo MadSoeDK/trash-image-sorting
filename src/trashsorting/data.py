@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, random_split
 from torchvision import transforms
 from typing import Any, cast
 
-class TrashNet(Dataset):
+class TrashData(Dataset):
     """PyTorch Dataset for TrashNet image classification.
 
     This dataset downloads and wraps the TrashNet dataset from HuggingFace
@@ -19,7 +19,7 @@ class TrashNet(Dataset):
         data_path: Root directory for caching the dataset. Raw data will be
             stored in subdirectories following the Cookiecutter Data Science
             structure.
-        split: Dataset split to load. One of "train", "test", or "all".
+        split: Dataset split to load. One of "train", "test", "val", or "all".
             Default is "train".
         transform: Optional torchvision transform to apply to images.
             If None, uses default transforms (resize to 224x224 and normalize).
@@ -36,7 +36,7 @@ class TrashNet(Dataset):
     def __init__(
         self,
         data_path: str | Path,
-        split: Literal["train", "test", "all"] = "train",
+        split: Literal["train", "test", "val", "all"] = "train",
         transform: transforms.Compose | None = None,
         fraction: float = 1.0,
         seed: int = 42,
@@ -47,7 +47,7 @@ class TrashNet(Dataset):
 
         Args:
             data_path: Root directory for caching the dataset.
-            split: Dataset split to load ("train", "test", or "all").
+            split: Dataset split to load ("train", "test", "val", or "all").
             transform: Optional custom transforms. If None, uses default.
         """
         self.data_path = Path(data_path)
@@ -204,7 +204,7 @@ def preprocess(data_path: Path, output_folder: Path) -> None:
         output_folder: Directory where preprocessed data will be saved.
     """
     print("Preprocessing data...")
-    dataset = TrashNet(data_path, 'all', fraction=0.25)
+    dataset = TrashData(data_path, 'all', fraction=0.25)
     dataset.preprocess(output_folder)
 
 

@@ -1,18 +1,18 @@
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from trashsorting.data import TrashNet
+from trashsorting.data import TrashData
 
 
 def test_my_dataset():
     """Test the MyDataset class."""
-    dataset = TrashNet("data/raw")
+    dataset = TrashData("data/raw")
     assert isinstance(dataset, Dataset)
 
 
 def test_dataset_instantiation():
     """Test dataset instantiation and basic properties."""
-    dataset = TrashNet("data/raw", split="train")
+    dataset = TrashData("data/raw", split="train")
 
     # Check dataset has samples
     assert len(dataset) > 0, "Dataset should have samples"
@@ -29,7 +29,7 @@ def test_dataset_instantiation():
 
 def test_getitem():
     """Test __getitem__ returns correct format."""
-    dataset = TrashNet("data/raw", split="train")
+    dataset = TrashData("data/raw", split="train")
 
     # Get first sample
     img, label = dataset[0]
@@ -51,7 +51,7 @@ def test_getitem():
 
 def test_dataloader_compatibility():
     """Test dataset works with PyTorch DataLoader."""
-    dataset = TrashNet("data/raw", split="train")
+    dataset = TrashData("data/raw", split="train")
 
     # Create DataLoader
     loader = DataLoader(dataset, batch_size=2, shuffle=False)
