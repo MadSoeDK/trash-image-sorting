@@ -274,7 +274,7 @@ class TrashDataPreprocessed(Dataset):
 
         if not self.preprocessed_file.exists():
             logger.warning(f"Preprocessed file not found at {self.preprocessed_file}")
-            logger.warning(f"Falling back to TrashData (on-demand loading)")
+            logger.warning("Falling back to TrashData (on-demand loading)")
             logger.info(f"To use preprocessed data, run: python -m trashsorting.data {self.data_path} --fraction {fraction}")
 
             # Fall back to TrashData

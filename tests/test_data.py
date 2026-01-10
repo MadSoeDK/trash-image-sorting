@@ -1,5 +1,4 @@
 import torch
-from pathlib import Path
 from torch.utils.data import DataLoader, Dataset
 
 from trashsorting.data import TrashData, TrashDataPreprocessed
