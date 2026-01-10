@@ -4,11 +4,14 @@ from datetime import datetime
 import logging
 
 import torch
+import torchvision
 import typer
 from datasets import load_dataset
 from torch.utils.data import Dataset, random_split
 from torchvision import transforms
 from typing import Any, cast
+
+from trashsorting.utils.transform import image_transform
 
 logger = logging.getLogger(__name__)
 
@@ -105,17 +108,7 @@ class TrashData(Dataset):
         # Set up transforms
         if transform is None:
             # Default transforms: resize, convert to tensor, and normalize
-            # Using ImageNet normalization for easier transfer learning
-            self.transform = transforms.Compose(
-                [
-                    transforms.Resize((224, 224)),
-                    transforms.ToTensor(),
-                    transforms.Normalize(
-                        mean=[0.485, 0.456, 0.406],
-                        std=[0.229, 0.224, 0.225],
-                    ),
-                ]
-            )
+            self.transform = image_transform()
         else:
             self.transform = transform
 
@@ -204,7 +197,7 @@ class TrashData(Dataset):
             "seed": seed,
             "fraction": fraction,
             "pytorch_version": torch.__version__,
-            "torchvision_version": transforms.__version__ if hasattr(transforms, '__version__') else "unknown",
+            "torchvision_version": torchvision.__version__,
         }
 
         # Save everything in a single file
@@ -274,7 +267,7 @@ class TrashDataPreprocessed(Dataset):
         self.split = split
         self.seed = seed
         self.fraction = fraction
-        self.fallback_dataset = None
+        self.default_dataset = None
 
         # Check if preprocessed file exists
         self.preprocessed_file = self.data_path / "processed" / "trashnet.pt"
@@ -286,12 +279,12 @@ class TrashDataPreprocessed(Dataset):
 
             # Fall back to TrashData
             raw_path = self.data_path / "raw"
-            self.fallback_dataset = TrashData(
+            self.default_dataset = TrashData(
                 raw_path, split=split, transform=transform,
                 fraction=fraction, seed=seed
             )
-            self.classes = self.fallback_dataset.classes
-            self.class_to_idx = self.fallback_dataset.class_to_idx
+            self.classes = self.default_dataset.classes
+            self.class_to_idx = self.default_dataset.class_to_idx
             return
 
         # Try to load preprocessed data
@@ -306,12 +299,12 @@ class TrashDataPreprocessed(Dataset):
 
                 # Fall back to TrashData
                 raw_path = self.data_path / "raw"
-                self.fallback_dataset = TrashData(
+                self.default_dataset = TrashData(
                     raw_path, split=split, transform=transform,
                     fraction=fraction, seed=seed
                 )
-                self.classes = self.fallback_dataset.classes
-                self.class_to_idx = self.fallback_dataset.class_to_idx
+                self.classes = self.default_dataset.classes
+                self.class_to_idx = self.default_dataset.class_to_idx
                 return
 
             # Warn if transform is provided (not used for preprocessed data)
@@ -328,7 +321,7 @@ class TrashDataPreprocessed(Dataset):
             if split == "all":
                 logger.info(f"Loaded {total_size} samples from preprocessed data")
             else:
-                split_size = len(self.split_indices)
+                split_size = len(self.split_indices) if self.split_indices is not None else 0
                 logger.info(f"Loaded {split_size} {split} samples from preprocessed data")
 
         except Exception as e:
@@ -337,12 +330,12 @@ class TrashDataPreprocessed(Dataset):
 
             # Fall back to TrashData
             raw_path = self.data_path / "raw"
-            self.fallback_dataset = TrashData(
+            self.default_dataset = TrashData(
                 raw_path, split=split, transform=transform,
                 fraction=fraction, seed=seed
             )
-            self.classes = self.fallback_dataset.classes
-            self.class_to_idx = self.fallback_dataset.class_to_idx
+            self.classes = self.default_dataset.classes
+            self.class_to_idx = self.default_dataset.class_to_idx
 
     def _load_preprocessed(self) -> None:
         """Load preprocessed data from file."""
@@ -366,12 +359,12 @@ class TrashDataPreprocessed(Dataset):
         Returns:
             Number of samples in the dataset split.
         """
-        if self.fallback_dataset is not None:
-            return len(self.fallback_dataset)
+        if self.default_dataset is not None:
+            return len(self.default_dataset)
 
         if self.split == "all":
             return len(self.images)
-        return len(self.split_indices)
+        return len(self.split_indices) if self.split_indices is not None else 0
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
         """Return a preprocessed sample from the dataset.
@@ -384,14 +377,14 @@ class TrashDataPreprocessed(Dataset):
             torch.Tensor of shape (3, 224, 224) and label is an integer
             class index.
         """
-        if self.fallback_dataset is not None:
-            return self.fallback_dataset[index]
+        if self.default_dataset is not None:
+            return self.default_dataset[index]
 
         # Map split-relative index to absolute index
         if self.split == "all":
             actual_index = index
         else:
-            actual_index = self.split_indices[index]
+            actual_index = self.split_indices[index] # type: ignore
 
         # Return preprocessed data
         return self.images[actual_index], int(self.labels[actual_index])
