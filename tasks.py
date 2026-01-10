@@ -1,6 +1,7 @@
 import os
 
-from invoke import Context, task
+from invoke.tasks import task
+from invoke.context import Context
 
 WINDOWS = os.name == "nt"
 PROJECT_NAME = "trashsorting"
@@ -8,14 +9,14 @@ PYTHON_VERSION = "3.12"
 
 # Project commands
 @task
-def preprocess_data(ctx: Context) -> None:
+def preprocess(ctx: Context, fraction: float = 1.0) -> None:
     """Preprocess data."""
-    ctx.run(f"uv run src/{PROJECT_NAME}/data.py data/raw data/processed", echo=True, pty=not WINDOWS)
+    ctx.run(f"uv run src/{PROJECT_NAME}/data.py data/ --fraction {fraction}", echo=True, pty=not WINDOWS)
 
 @task
-def train(ctx: Context) -> None:
+def train(ctx: Context, fraction: float = 1.0, batch_size: int = 32, max_epochs: int = 10) -> None:
     """Train model."""
-    ctx.run(f"uv run src/{PROJECT_NAME}/train.py", echo=True, pty=not WINDOWS)
+    ctx.run(f"uv run src/{PROJECT_NAME}/train.py --fraction {fraction} --batch-size {batch_size} --max-epochs {max_epochs}", echo=True, pty=not WINDOWS)
 
 @task
 def test(ctx: Context) -> None:
