@@ -828,6 +828,19 @@ wheels = [
 ]
 
 [[package]]
+name = "loguru"
+version = "0.7.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "win32-setctime", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3a/05/a1dae3dffd1116099471c643b8924f5aa6524411dc6c63fdae648c4f1aca/loguru-0.7.3.tar.gz", hash = "sha256:19480589e77d47b8d85b2c827ad95d49bf31b0dcde16593892eb51dd18706eb6", size = 63559, upload-time = "2024-12-06T11:20:56.608Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/29/0348de65b8cc732daa3e33e67806420b2ae89bdce2b04af740289c5c6c8c/loguru-0.7.3-py3-none-any.whl", hash = "sha256:31a33c10c8e1e10422bfd431aeb5d351c7cf7fa671e3c4df004162264b28220c", size = 61595, upload-time = "2024-12-06T11:20:54.538Z" },
+]
+
+[[package]]
 name = "markdown"
 version = "3.10"
 source = { registry = "https://pypi.org/simple" }
@@ -2309,7 +2322,6 @@ source = { editable = "." }
 dependencies = [
     { name = "datasets" },
     { name = "fastapi" },
-    { name = "loguru" },
     { name = "pillow" },
     { name = "pytorch-lightning" },
     { name = "timm" },
@@ -2325,6 +2337,7 @@ dependencies = [
 dev = [
     { name = "coverage" },
     { name = "invoke" },
+    { name = "loguru" },
     { name = "matplotlib" },
     { name = "mkdocs" },
     { name = "mkdocs-material" },
@@ -2340,7 +2353,6 @@ dev = [
 requires-dist = [
     { name = "datasets", specifier = ">=3.2.0" },
     { name = "fastapi", specifier = "==0.115.6" },
-    { name = "loguru", specifier = ">=0.7.3" },
     { name = "pillow", specifier = ">=11.0.0" },
     { name = "pytorch-lightning", specifier = ">=2.6.0" },
     { name = "timm", specifier = ">=1.0.12" },
@@ -2354,6 +2366,7 @@ requires-dist = [
 dev = [
     { name = "coverage", specifier = "==7.6.9" },
     { name = "invoke", specifier = "==2.2.0" },
+    { name = "loguru", specifier = ">=0.7.3" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "mkdocs", specifier = "==1.6.1" },
     { name = "mkdocs-material", specifier = "==9.4.6" },
