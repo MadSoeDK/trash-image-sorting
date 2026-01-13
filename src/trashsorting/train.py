@@ -8,8 +8,8 @@ from trashsorting.model import TrashModel
 import typer
 import logging
 from dotenv import load_dotenv
-load_dotenv()
 import os
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
