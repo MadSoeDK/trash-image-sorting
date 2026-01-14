@@ -200,34 +200,31 @@ class TrashData(Dataset):
             "torchvision_version": torchvision.__version__,
         }
 
-        # Save to separate files for DVC tracking
-        images_file = output_path / "all_images.pt"
-        labels_file = output_path / "all_labels.pt"
-        metadata_file = output_path / "all_metadata.pt"
-
-        torch.save(images_tensor, images_file)
-        torch.save(labels_tensor, labels_file)
-        torch.save(metadata, metadata_file)
+        # Save to single file for DVC tracking
+        output_file = output_path / "trashnet.pt"
+        torch.save({
+            "images": images_tensor,
+            "labels": labels_tensor,
+            "metadata": metadata,
+        }, output_file)
 
         logger.info(f"Preprocessing complete! Saved {len(full_dataset)} samples")
-        logger.info(f"  Images: {images_file} ({images_file.stat().st_size / (1024*1024):.1f} MB)")
-        logger.info(f"  Labels: {labels_file} ({labels_file.stat().st_size / (1024*1024):.1f} MB)")
-        logger.info(f"  Metadata: {metadata_file} ({metadata_file.stat().st_size / (1024):.1f} KB)")
+        logger.info(f"  Output: {output_file} ({output_file.stat().st_size / (1024*1024):.1f} MB)")
 
 
 class TrashDataPreprocessed(Dataset):
     """PyTorch Dataset for preprocessed TrashNet data.
 
-    Loads preprocessed data from data/processed/ (all_images.pt, all_labels.pt, all_metadata.pt)
-    for fast training. If the preprocessed files don't exist, falls back to using TrashData.
+    Loads preprocessed data from data/processed/trashnet.pt
+    for fast training. If the preprocessed file doesn't exist, falls back to using TrashData.
 
     This dataset provides 10-20x faster loading compared to TrashData by
     loading preprocessed tensors directly from disk rather than processing
     images on-the-fly.
 
     Args:
-        data_path: Root directory for data. Preprocessed files should be at
-            data_path/processed/, raw data at data_path/raw.
+        data_path: Root directory for data. Preprocessed file should be at
+            data_path/processed/trashnet.pt, raw data at data_path/raw.
         split: Dataset split to load. One of "train", "test", "val", or "all".
             Splits are computed at runtime using the seed for reproducibility.
         transform: Optional transform. Only used if falling back to TrashData.
@@ -270,13 +267,11 @@ class TrashDataPreprocessed(Dataset):
         self.fraction = fraction
         self.default_dataset = None
 
-        # Check if preprocessed files exist
+        # Check if preprocessed file exists
         processed_dir = self.data_path / "processed"
-        self.images_file = processed_dir / "all_images.pt"
-        self.labels_file = processed_dir / "all_labels.pt"
-        self.metadata_file = processed_dir / "all_metadata.pt"
+        self.preprocessed_file = processed_dir / "trashnet.pt"
 
-        if not (self.images_file.exists() and self.labels_file.exists() and self.metadata_file.exists()):
+        if not self.preprocessed_file.exists():
             logger.warning(f"Preprocessed files not found at {processed_dir}")
             logger.warning("Falling back to TrashData (on-demand loading)")
             logger.info(f"To use preprocessed data, run: python -m trashsorting.data data --fraction {fraction}")
@@ -342,13 +337,13 @@ class TrashDataPreprocessed(Dataset):
             self.class_to_idx = self.default_dataset.class_to_idx
 
     def _load_preprocessed(self) -> None:
-        """Load preprocessed data from separate files."""
-        logger.info(f"Loading preprocessed data from {self.images_file.parent}...")
+        """Load preprocessed data from trashnet.pt."""
+        logger.info(f"Loading preprocessed data from {self.preprocessed_file}...")
 
-        self.images = torch.load(self.images_file, weights_only=True)
-        self.labels = torch.load(self.labels_file, weights_only=True)
-        self.metadata = torch.load(self.metadata_file, weights_only=False)
-
+        data = torch.load(self.preprocessed_file, weights_only=False)
+        self.images = data["images"]
+        self.labels = data["labels"]
+        self.metadata = data["metadata"]
 
         # Extract class information
         self.classes = self.metadata["classes"]
@@ -441,12 +436,9 @@ def preprocess(
     fraction: float = typer.Option(1.0, help="Fraction of data to preprocess (0.0-1.0)"),
     seed: int = typer.Option(42, help="Random seed for shuffling"),
 ) -> None:
-    """CLI command to preprocess the TrashNet dataset into separate files.
+    """CLI command to preprocess the TrashNet dataset.
 
-    The preprocessed data will be saved to data_path/processed/ as:
-    - all_images.pt
-    - all_labels.pt
-    - all_metadata.pt
+    The preprocessed data will be saved to data_path/processed/trashnet.pt
 
     Args:
         data_path: Root directory for data. Raw data should be in data_path/raw.

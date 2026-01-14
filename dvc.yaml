@@ -7,18 +7,14 @@ stages:
       - data.fraction
       - data.seed
     outs:
-      - data/processed/all_images.pt
-      - data/processed/all_labels.pt
-      - data/processed/all_metadata.pt
+      - data/processed/trashnet.pt
 
   train:
     cmd: python -m trashsorting.train
     deps:
       - src/trashsorting/train.py
       - src/trashsorting/model.py
-      - data/processed/all_images.pt
-      - data/processed/all_labels.pt
-      - data/processed/all_metadata.pt
+      - data/processed/trashnet.pt
     params:
       - data.fraction
       - data.seed
