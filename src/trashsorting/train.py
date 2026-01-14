@@ -46,6 +46,8 @@ def train():
     max_epochs: int = train_params.get("epochs", 10)
     learning_rate: float = train_params.get("learning_rate", 0.001)
     model_name: str = train_params.get("model_name", "resnet18")
+    num_workers: int = train_params.get("num_workers", 4)
+    use_wandb_logger: bool = train_params.get("use_wandb_logger", True)
 
     # Load preprocessed data to get metadata
     processed_path = Path("data/processed")

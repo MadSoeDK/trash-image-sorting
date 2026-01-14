@@ -41,12 +41,12 @@ stages:
       size: 1332
     - path: src/trashsorting/model.py
       hash: md5
-      md5: 08402745e9e54becf497da7c7c60f0b1
-      size: 1974
+      md5: cc64be8c2b3ec716df83c7643725a92f
+      size: 2256
     - path: src/trashsorting/train.py
       hash: md5
-      md5: ed5f9713bbce24c66a1cee6a1f12b6b6
-      size: 3687
+      md5: f6f42ba0827633c464b4b5ec444c8e14
+      size: 4234
     params:
       params.yaml:
         data.fraction: 0.25
@@ -59,5 +59,5 @@ stages:
     outs:
     - path: models/model.pth
       hash: md5
-      md5: b23fdccd15fa697f261c29b1d38367f0
+      md5: a4c8b3adb6f2041008913f96c2036c89
       size: 44793026
