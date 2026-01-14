@@ -68,6 +68,11 @@ def evaluate(
     # Extract metrics
     metrics = dict(results[0]) if results else {}
 
+    logger.info(f"Results: {metrics}")
+    print(f"\nEvaluation Results:")
+    for key, value in metrics.items():
+        print(f"  {key}: {value:.4f}")
+
     # Save metrics to JSON file for DVC tracking
     output_path = Path(output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
