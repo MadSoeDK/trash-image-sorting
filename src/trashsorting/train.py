@@ -54,8 +54,8 @@ def train(
 
     trainer.fit(
         model,
-        train_dataloaders=DataLoader(TrashDataPreprocessed("data", split="train", fraction=fraction), batch_size=batch_size, shuffle=True),
-        val_dataloaders=DataLoader(TrashDataPreprocessed("data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False)
+        train_dataloaders=DataLoader(TrashDataPreprocessed("data", split="train", fraction=fraction), batch_size=batch_size, shuffle=True, num_workers=num_workers),
+        val_dataloaders=DataLoader(TrashDataPreprocessed("data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False, num_workers=num_workers)
     )
 
     print(f"\nBest model saved at: {checkpoint_callback.best_model_path}")
