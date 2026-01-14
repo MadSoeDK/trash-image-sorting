@@ -38,8 +38,21 @@ stages:
 #          x: epoch
 #          y: loss
 
-  # TODO: Add an evaluation stage
-  #evaluate:
-    #cmd: python -m trashsorting.evaluate
-
+  evaluate:
+    cmd: python -m trashsorting.evaluate
+    deps:
+      - src/trashsorting/evaluate.py
+      - src/trashsorting/model.py
+      - models/model.pth
+      - data/processed/all_images.pt
+      - data/processed/all_labels.pt
+      - data/processed/all_metadata.pt
+    params:
+      - data.fraction
+      - evaluate.checkpoint_path
+      - evaluate.batch_size
+      - evaluate.num_workers
+    metrics:
+      - reports/eval_metrics.json:
+          cache: false
 

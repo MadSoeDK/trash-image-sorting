@@ -11,3 +11,9 @@ train:
   weight_decay: 0.0001
   num_workers: 4
 
+evaluate:
+  checkpoint_path: "models/model.pth"
+  data_path: "data"
+  batch_size: 32
+  num_workers: 4
+  metrics_output: "reports/eval_metrics.json"
