@@ -9,5 +9,5 @@ train:
   model_name: "mobilenetv3_small_100"  # Options: resnet18, resnet34, resnet50, efficientnet_b0, etc.
   optimizer: "adam"       # Options: adam, sgd
   weight_decay: 0.0001
-  num_workers: 4
-  use_wandb_logger: false
+  num_workers: 0 # set to 0 for local testing; increase for better performance on larger systems
+  use_wandb_logger: false # false for local testing; set to true to enable Weights & Biases logging
