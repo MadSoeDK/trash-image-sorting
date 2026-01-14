@@ -7,7 +7,15 @@ train:
   batch_size: 32
   max_epochs: 10
   model_name: "mobilenetv3_small_100"  # Options: resnet18, resnet34, resnet50, efficientnet_b0, etc.
-  optimizer: "adam"       # Options: adam, sgd
+  optimizer: "adam"
   weight_decay: 0.0001
+  num_workers: 0 # set to 0 for local testing; increase for better performance on larger systems
+  use_wandb_logger: false # false for local testing; set to true to enable Weights & Biases logging
+
+evaluate:
+  checkpoint_path: "models/model.ckpt"
+  data_path: "data"
+  batch_size: 32
+  output: "models/metrics.json"
   num_workers: 0 # set to 0 for local testing; increase for better performance on larger systems
   use_wandb_logger: false # false for local testing; set to true to enable Weights & Biases logging

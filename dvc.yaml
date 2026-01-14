@@ -26,7 +26,7 @@ stages:
       - train.use_wandb_logger
       - train.num_workers
     outs:
-      - models/model.pth
+      - models/model.ckpt
 #    metrics:
 #      - reports/metrics.json:
 #          cache: false
@@ -36,6 +36,18 @@ stages:
 #          x: epoch
 #          y: loss
 
-  # TODO: Add an evaluation stage
-  #evaluate:
-    #cmd: python -m trashsorting.evaluate
+  evaluate:
+    cmd: python -m trashsorting.evaluate
+    deps:
+      - src/trashsorting/evaluate.py
+      - src/trashsorting/model.py
+      - models/model.ckpt
+      - data/processed/trashnet.pt
+    params:
+      - data.fraction
+      - evaluate.checkpoint_path
+      - evaluate.batch_size
+      - evaluate.num_workers
+    metrics:
+      - reports/eval_metrics.json:
+          cache: false

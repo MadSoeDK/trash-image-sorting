@@ -2,9 +2,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
-from pathlib import Path
 
-import torch
 import yaml
 from trashsorting.data import TrashDataPreprocessed
 from trashsorting.model import TrashModel
@@ -30,14 +28,13 @@ def train(
 ):
     model = TrashModel()
 
-    # Configure checkpoint callback to save best and last models
+    # Configure checkpoint callback to save best model with fixed name for DVC
     checkpoint_callback = ModelCheckpoint(
         dirpath="models",
-        filename="best-{epoch:02d}-{val_loss:.2f}",
+        filename="model",
         monitor="val_loss",
         mode="min",
         save_top_k=1,
-        save_last=True,
     )
 
     # initialise the wandb logger
@@ -58,20 +55,7 @@ def train(
         val_dataloaders=DataLoader(TrashDataPreprocessed("data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False, num_workers=num_workers)
     )
 
-    print(f"\nBest model saved at: {checkpoint_callback.best_model_path}")
-
-    # Save the final model to models/model.pth for DVC tracking
-    model_output_path = Path("models")
-    model_output_path.mkdir(parents=True, exist_ok=True)
-
-    # Save the best model's state dict
-    if checkpoint_callback.best_model_path:
-        best_model = TrashModel.load_from_checkpoint(checkpoint_callback.best_model_path)
-        torch.save(best_model.state_dict(), model_output_path / "model.pth")
-    else:
-        torch.save(model.state_dict(), model_output_path / "model.pth")
-
-    print(f"Training complete! Model saved to {model_output_path / 'model.pth'}")
+    logger.info(f"Training complete! Model saved to {checkpoint_callback.best_model_path}")
 
 
 def main():
