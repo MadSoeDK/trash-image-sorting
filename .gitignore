@@ -186,5 +186,6 @@ data/
 # models
 models/
 
-# logs
+# training logs
 lightning_logs/
+wandb/

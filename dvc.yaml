@@ -24,9 +24,11 @@ stages:
       - data.seed
       - train.learning_rate
       - train.batch_size
-      - train.epochs
+      - train.max_epochs
       - train.model_name
       - train.optimizer
+      - train.use_wandb_logger
+      - train.num_workers
     outs:
       - models/model.pth
 #    metrics:
@@ -41,5 +43,3 @@ stages:
   # TODO: Add an evaluation stage
   #evaluate:
     #cmd: python -m trashsorting.evaluate
-
-

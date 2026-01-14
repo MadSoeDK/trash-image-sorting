@@ -1,13 +1,13 @@
 data:
-  fraction: 0.25  # Use 25% of the dataset for faster experimentation
+  fraction: 1.0  # Use 100% of the dataset for full training
   seed: 42        # Random seed for reproducibility
 
 train:
   learning_rate: 0.001
   batch_size: 32
-  epochs: 10
-  model_name: "resnet18"  # Options: resnet18, resnet34, resnet50, efficientnet_b0, etc.
+  max_epochs: 10
+  model_name: "mobilenetv3_small_100"  # Options: resnet18, resnet34, resnet50, efficientnet_b0, etc.
   optimizer: "adam"       # Options: adam, sgd
   weight_decay: 0.0001
   num_workers: 4
-
+  use_wandb_logger: false

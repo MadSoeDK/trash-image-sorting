@@ -1,5 +1,6 @@
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 from pathlib import Path
 
@@ -7,11 +8,12 @@ import torch
 import yaml
 from trashsorting.data import TrashDataPreprocessed
 from trashsorting.model import TrashModel
-import typer
 import logging
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 logger = logging.getLogger(__name__)
-
 
 def load_params():
     """Load parameters from params.yaml"""
@@ -19,51 +21,14 @@ def load_params():
         params = yaml.safe_load(f)
     return params
 
-
-def train():
-    """Train the trash classification model using DVC-tracked parameters and data."""
-    # Load parameters
-    params = load_params()
-    data_params = params["data"]
-    train_params = params["train"]
-
-    print("=" * 60)
-    print("Starting training with parameters:")
-    print(f"  Data fraction: {data_params['fraction']}")
-    print(f"  Model: {train_params['model_name']}")
-    print(f"  Learning rate: {train_params['learning_rate']}")
-    print(f"  Batch size: {train_params['batch_size']}")
-    print(f"  Epochs: {train_params['epochs']}")
-    print("=" * 60)
-
-    fraction: float = data_params.get("fraction", 1.0)
-    seed: int = data_params.get("seed", 42)
-    batch_size: int = train_params.get("batch_size", 32)
-    max_epochs: int = train_params.get("epochs", 10)
-    learning_rate: float = train_params.get("learning_rate", 0.001)
-    model_name: str = train_params.get("model_name", "resnet18")
-
-    # Load preprocessed data to get metadata
-    processed_path = Path("data/processed")
-    print(f"\nLoading preprocessed data from {processed_path}...")
-
-    metadata = torch.load(processed_path / "all_metadata.pt", weights_only=False)
-    num_classes = len(metadata["classes"])
-    print(f"Number of classes: {num_classes}")
-    print(f"Classes: {metadata['classes']}")
-
-    # Create datasets using TrashDataPreprocessed
-    train_dataset = TrashDataPreprocessed("data", split="train", fraction=fraction, seed=seed)
-    val_dataset = TrashDataPreprocessed("data", split="val", fraction=fraction, seed=seed)
-
-    print(f"Dataset sizes - Train: {len(train_dataset)}, Val: {len(val_dataset)}")
-
-    # Create model with parameters from config
-    model = TrashModel(
-        model_name=model_name,
-        num_classes=num_classes,
-        lr=learning_rate
-    )
+def train(
+    fraction: float = 1.0,
+    batch_size: int = 32,
+    max_epochs: int = 10,
+    use_wandb_logger: bool = True,
+    num_workers: int = 4
+):
+    model = TrashModel()
 
     # Configure checkpoint callback to save best and last models
     checkpoint_callback = ModelCheckpoint(
@@ -75,15 +40,22 @@ def train():
         save_last=True,
     )
 
+    # initialise the wandb logger
+    wandb_logger = None
+    if use_wandb_logger:
+        wandb_logger = WandbLogger(project=os.getenv("WANDB_PROJECT"))
+        wandb_logger.experiment.config["batch_size"] = batch_size
+
     trainer = Trainer(
         max_epochs=max_epochs,
-        callbacks=[checkpoint_callback]
+        callbacks=[checkpoint_callback],
+        logger=wandb_logger
     )
 
     trainer.fit(
         model,
-        train_dataloaders=DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0),
-        val_dataloaders=DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+        train_dataloaders=DataLoader(TrashDataPreprocessed("data", split="train", fraction=fraction), batch_size=batch_size, shuffle=True),
+        val_dataloaders=DataLoader(TrashDataPreprocessed("data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False)
     )
 
     print(f"\nBest model saved at: {checkpoint_callback.best_model_path}")
@@ -102,5 +74,17 @@ def train():
     print(f"Training complete! Model saved to {model_output_path / 'model.pth'}")
 
 
+def main():
+    """Entry point that loads params from YAML."""
+    params = load_params()
+    train(
+        fraction=params["data"]["fraction"],
+        batch_size=params["train"]["batch_size"],
+        max_epochs=params["train"]["max_epochs"],
+        use_wandb_logger=params["train"]["use_wandb_logger"],
+        num_workers=params["train"]["num_workers"],
+    )
+
+
 if __name__ == "__main__":
-    typer.run(train)
+    main()

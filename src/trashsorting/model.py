@@ -42,6 +42,14 @@ class TrashModel(LightningModule):
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_acc", acc, prog_bar=True)
 
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.loss_fn(logits, y)
+        acc = (logits.argmax(1) == y).float().mean()
+        self.log("test_loss", loss, prog_bar=True)
+        self.log("test_acc", acc, prog_bar=True)
+
     def configure_optimizers(self):
         params = filter(lambda p: p.requires_grad, self.baseline_model.parameters())
         return torch.optim.Adam(params, lr=self.lr)
