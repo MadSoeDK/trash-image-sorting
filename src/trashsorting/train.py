@@ -5,7 +5,6 @@ from pathlib import Path
 
 import torch
 import yaml
-from torch.utils.data import TensorDataset
 from trashsorting.data import TrashDataPreprocessed
 from trashsorting.model import TrashModel
 import typer
@@ -13,17 +12,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def load_params():
     """Load parameters from params.yaml"""
     with open("params.yaml", "r") as f:
         params = yaml.safe_load(f)
     return params
 
-def train(
-    fraction: float = 1.0,
-    batch_size: int = 32,
-    max_epochs: int = 10
-):
+
+def train():
     """Train the trash classification model using DVC-tracked parameters and data."""
     # Load parameters
     params = load_params()
@@ -39,26 +36,35 @@ def train(
     print(f"  Epochs: {train_params['epochs']}")
     print("=" * 60)
 
-    # Load preprocessed data
+    fraction: float = data_params.get("fraction", 1.0)
+    seed: int = data_params.get("seed", 42)
+    batch_size: int = train_params.get("batch_size", 32)
+    max_epochs: int = train_params.get("epochs", 10)
+    learning_rate: float = train_params.get("learning_rate", 0.001)
+    model_name: str = train_params.get("model_name", "resnet18")
+    num_workers: int = train_params.get("num_workers", 4)
+
+    # Load preprocessed data to get metadata
     processed_path = Path("data/processed")
     print(f"\nLoading preprocessed data from {processed_path}...")
 
-    images = torch.load(processed_path / "all_images.pt")
-    labels = torch.load(processed_path / "all_labels.pt")
-    metadata = torch.load(processed_path / "all_metadata.pt")
-
+    metadata = torch.load(processed_path / "all_metadata.pt", weights_only=False)
     num_classes = len(metadata["classes"])
     print(f"Number of classes: {num_classes}")
     print(f"Classes: {metadata['classes']}")
 
-    # Create dataset and split into train/val/test (70/15/15)
-    dataset = TensorDataset(images, labels)
-    total_size = len(dataset)
-    train_size = int(0.7 * total_size)
-    val_size = int(0.15 * total_size)
-    test_size = total_size - train_size - val_size
-    print(f"Dataset sizes - Train: {train_size}, Val: {val_size}, Test: {test_size}")
-    model = TrashModel()
+    # Create datasets using TrashDataPreprocessed
+    train_dataset = TrashDataPreprocessed("data", split="train", fraction=fraction, seed=seed)
+    val_dataset = TrashDataPreprocessed("data", split="val", fraction=fraction, seed=seed)
+
+    print(f"Dataset sizes - Train: {len(train_dataset)}, Val: {len(val_dataset)}")
+
+    # Create model with parameters from config
+    model = TrashModel(
+        model_name=model_name,
+        num_classes=num_classes,
+        lr=learning_rate
+    )
 
     # Configure checkpoint callback to save best and last models
     checkpoint_callback = ModelCheckpoint(
@@ -77,18 +83,24 @@ def train(
 
     trainer.fit(
         model,
-        train_dataloaders=DataLoader(TrashDataPreprocessed("data", split="train", fraction=fraction), batch_size=batch_size, shuffle=True),
-        val_dataloaders=DataLoader(TrashDataPreprocessed("data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False)
+        train_dataloaders=DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0),
+        val_dataloaders=DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     )
 
-    logging.info(f"Best model saved at: {checkpoint_callback.best_model_path}")
+    print(f"\nBest model saved at: {checkpoint_callback.best_model_path}")
 
-    #Generate dummy training output (- models/model.pth)
+    # Save the final model to models/model.pth for DVC tracking
     model_output_path = Path("models")
     model_output_path.mkdir(parents=True, exist_ok=True)
-    dummy_model = torch.nn.Linear(10, num_classes)  # Dummy model
-    torch.save(dummy_model.state_dict(), model_output_path / "model.pth")
-    print(f"\nTraining complete! Model saved to {model_output_path / 'model.pth'}")
+
+    # Save the best model's state dict
+    if checkpoint_callback.best_model_path:
+        best_model = TrashModel.load_from_checkpoint(checkpoint_callback.best_model_path)
+        torch.save(best_model.state_dict(), model_output_path / "model.pth")
+    else:
+        torch.save(model.state_dict(), model_output_path / "model.pth")
+
+    print(f"Training complete! Model saved to {model_output_path / 'model.pth'}")
 
 
 if __name__ == "__main__":

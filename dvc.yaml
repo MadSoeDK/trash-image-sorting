@@ -1,6 +1,6 @@
 stages:
   preprocess_data:
-    cmd: python -m trashsorting.data data/raw data/processed
+    cmd: python -m trashsorting.data data --fraction ${data.fraction} --seed ${data.seed}
     deps:
       - src/trashsorting/data.py
     params:
@@ -20,12 +20,13 @@ stages:
       - data/processed/all_labels.pt
       - data/processed/all_metadata.pt
     params:
+      - data.fraction
+      - data.seed
       - train.learning_rate
       - train.batch_size
       - train.epochs
       - train.model_name
       - train.optimizer
-      - data.seed
     outs:
       - models/model.pth
 #    metrics:
