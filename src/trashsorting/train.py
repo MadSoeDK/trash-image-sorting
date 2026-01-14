@@ -3,15 +3,21 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
+import yaml
 from trashsorting.data import TrashDataPreprocessed
 from trashsorting.model import TrashModel
-import typer
 import logging
 from dotenv import load_dotenv
 import os
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+def load_params():
+    """Load parameters from params.yaml"""
+    with open("params.yaml", "r") as f:
+        params = yaml.safe_load(f)
+    return params
 
 def train(
     fraction: float = 1.0,
@@ -22,14 +28,13 @@ def train(
 ):
     model = TrashModel()
 
-    # Configure checkpoint callback to save best and last models
+    # Configure checkpoint callback to save best model with fixed name for DVC
     checkpoint_callback = ModelCheckpoint(
         dirpath="models",
-        filename="best-{epoch:02d}-{val_loss:.2f}",
+        filename="model",
         monitor="val_loss",
         mode="min",
         save_top_k=1,
-        save_last=True,
     )
 
     # initialise the wandb logger
@@ -50,8 +55,20 @@ def train(
         val_dataloaders=DataLoader(TrashDataPreprocessed("data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False, num_workers=num_workers)
     )
 
-    logging.info(f"Best model saved at: {checkpoint_callback.best_model_path}")
+    logger.info(f"Training complete! Model saved to {checkpoint_callback.best_model_path}")
+
+
+def main():
+    """Entry point that loads params from YAML."""
+    params = load_params()
+    train(
+        fraction=params["data"]["fraction"],
+        batch_size=params["train"]["batch_size"],
+        max_epochs=params["train"]["max_epochs"],
+        use_wandb_logger=params["train"]["use_wandb_logger"],
+        num_workers=params["train"]["num_workers"],
+    )
 
 
 if __name__ == "__main__":
-    typer.run(train)
+    main()
