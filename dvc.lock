@@ -1,0 +1,101 @@
+schema: '2.0'
+stages:
+  preprocess_data:
+    cmd: python -m trashsorting.data data --fraction 0.25 --seed 42
+    deps:
+    - path: src/trashsorting/data.py
+      hash: md5
+      md5: 0d34ad5bf466c667d5fc6e425af229ca
+      size: 18388
+    params:
+      params.yaml:
+        data.fraction: 0.25
+        data.seed: 42
+    outs:
+    - path: data/processed/all_images.pt
+      hash: md5
+      md5: 91bc1c6f79bbd18f1680d548882d704f
+      size: 760468651
+    - path: data/processed/all_labels.pt
+      hash: md5
+      md5: 538769449618552a29e1373447914ab0
+      size: 11243
+    - path: data/processed/all_metadata.pt
+      hash: md5
+      md5: 6d0d9ac72360a96f8fcb7dd37e269601
+      size: 1332
+  train:
+    cmd: python -m trashsorting.train
+    deps:
+    - path: data/processed/all_images.pt
+      hash: md5
+      md5: 91bc1c6f79bbd18f1680d548882d704f
+      size: 760468651
+    - path: data/processed/all_labels.pt
+      hash: md5
+      md5: 538769449618552a29e1373447914ab0
+      size: 11243
+    - path: data/processed/all_metadata.pt
+      hash: md5
+      md5: 6d0d9ac72360a96f8fcb7dd37e269601
+      size: 1332
+    - path: src/trashsorting/model.py
+      hash: md5
+      md5: cc64be8c2b3ec716df83c7643725a92f
+      size: 2256
+    - path: src/trashsorting/train.py
+      hash: md5
+      md5: f6f42ba0827633c464b4b5ec444c8e14
+      size: 4234
+    params:
+      params.yaml:
+        data.fraction: 0.25
+        data.seed: 42
+        train.batch_size: 32
+        train.epochs: 10
+        train.learning_rate: 0.001
+        train.model_name: resnet18
+        train.optimizer: adam
+    outs:
+    - path: models/model.pth
+      hash: md5
+      md5: a4c8b3adb6f2041008913f96c2036c89
+      size: 44793026
+  evaluate:
+    cmd: python -m trashsorting.evaluate
+    deps:
+    - path: data/processed/all_images.pt
+      hash: md5
+      md5: 91bc1c6f79bbd18f1680d548882d704f
+      size: 760468651
+    - path: data/processed/all_labels.pt
+      hash: md5
+      md5: 538769449618552a29e1373447914ab0
+      size: 11243
+    - path: data/processed/all_metadata.pt
+      hash: md5
+      md5: 6d0d9ac72360a96f8fcb7dd37e269601
+      size: 1332
+    - path: models/model.pth
+      hash: md5
+      md5: a4c8b3adb6f2041008913f96c2036c89
+      size: 44793026
+    - path: src/trashsorting/evaluate.py
+      hash: md5
+      md5: b21980399bd39186094ab2e5c8c7ebf1
+      size: 4519
+    - path: src/trashsorting/model.py
+      hash: md5
+      md5: cc64be8c2b3ec716df83c7643725a92f
+      size: 2256
+    params:
+      params.yaml:
+        data.fraction: 0.25
+        evaluate.batch_size: 32
+        evaluate.checkpoint_path: models/model.pth
+        evaluate.num_workers: 4
+    outs:
+    - path: reports/eval_metrics.json
+      hash: md5
+      md5: f628d746c8608b4829fc4cc8abc71a5c
+      size: 72

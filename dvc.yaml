@@ -1,0 +1,53 @@
+stages:
+  preprocess_data:
+    cmd: python -m trashsorting.data data --fraction ${data.fraction} --seed ${data.seed}
+    deps:
+      - src/trashsorting/data.py
+    params:
+      - data.fraction
+      - data.seed
+    outs:
+      - data/processed/trashnet.pt
+
+  train:
+    cmd: python -m trashsorting.train
+    deps:
+      - src/trashsorting/train.py
+      - src/trashsorting/model.py
+      - data/processed/trashnet.pt
+    params:
+      - data.fraction
+      - data.seed
+      - train.learning_rate
+      - train.batch_size
+      - train.max_epochs
+      - train.model_name
+      - train.optimizer
+      - train.use_wandb_logger
+      - train.num_workers
+    outs:
+      - models/model.ckpt
+#    metrics:
+#      - reports/metrics.json:
+#          cache: false
+#    plots:
+#      - reports/training_history.json:
+#          cache: false
+#          x: epoch
+#          y: loss
+
+  evaluate:
+    cmd: python -m trashsorting.evaluate
+    deps:
+      - src/trashsorting/evaluate.py
+      - src/trashsorting/model.py
+      - models/model.ckpt
+      - data/processed/trashnet.pt
+    params:
+      - data.fraction
+      - evaluate.checkpoint_path
+      - evaluate.batch_size
+      - evaluate.num_workers
+    metrics:
+      - reports/eval_metrics.json:
+          cache: false
