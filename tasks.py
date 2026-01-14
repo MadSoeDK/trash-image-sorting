@@ -42,6 +42,19 @@ def test(ctx: Context) -> None:
     ctx.run("uv run coverage report -m -i", echo=True, pty=not WINDOWS)
 
 @task
+def predict(ctx: Context, image_path: str, checkpoint: str = "models/best-*.ckpt", verbose: bool = True) -> None:
+    """Predict image class."""
+    verbosity_flag = "--verbose" if verbose else ""
+    # Find checkpoint file
+    import glob
+    ckpt_files = glob.glob(checkpoint)
+    if not ckpt_files:
+        print(f"No checkpoint files found matching pattern: {checkpoint}")
+        return
+    checkpoint = ckpt_files[0]  # Use the first matching file
+    ctx.run(f"uv run src/{PROJECT_NAME}/predict.py {image_path} {checkpoint} {verbosity_flag}", echo=True, pty=not WINDOWS)
+
+@task
 def docker_build(ctx: Context, progress: str = "plain") -> None:
     """Build docker images."""
     ctx.run(
