@@ -1,0 +1,12 @@
+# Main Hydra configuration file
+# This provides an alternative way to manage configurations beyond params.yaml
+# Currently, the project uses params.yaml for DVC integration
+# You can optionally use Hydra by running: python -m trashsorting.train_hydra
+
+defaults:
+  - data: default
+  - train: default
+  - _self_
+
+# Override defaults here if needed
+
