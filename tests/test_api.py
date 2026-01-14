@@ -35,9 +35,9 @@ def sample_image():
     return img_bytes
 
 
-def test_root_endpoint(client):
-    """Test root endpoint returns API information."""
-    response = client.get("/")
+def test_api_root_endpoint(client):
+    """Test API root endpoint returns API information."""
+    response = client.get("/api/")
     assert response.status_code == 200
     data = response.json()
     assert "message" in data
@@ -48,7 +48,7 @@ def test_root_endpoint(client):
 
 def test_health_endpoint(client):
     """Test health check endpoint."""
-    response = client.get("/health")
+    response = client.get("/api/health")
     assert response.status_code == 200
     data = response.json()
     assert "status" in data
@@ -83,7 +83,7 @@ def test_predict_success(mock_state, mock_predict, client, sample_image, mock_mo
 
     # Make request
     response = client.post(
-        "/predict",
+        "/api/predict",
         files={"file": ("test.jpg", sample_image, "image/jpeg")}
     )
 
@@ -108,7 +108,7 @@ def test_predict_invalid_file_type(mock_state, client, mock_model):
 
     file_content = b"This is not an image"
     response = client.post(
-        "/predict",
+        "/api/predict",
         files={"file": ("test.txt", file_content, "text/plain")}
     )
     assert response.status_code == 400
@@ -125,7 +125,7 @@ def test_predict_model_not_loaded(mock_state, client, sample_image):
     }[key]
 
     response = client.post(
-        "/predict",
+        "/api/predict",
         files={"file": ("test.jpg", sample_image, "image/jpeg")}
     )
     assert response.status_code == 503
@@ -145,7 +145,7 @@ def test_predict_corrupted_image(mock_state, client, mock_model):
     corrupted = io.BytesIO(b"corrupted image data")
 
     response = client.post(
-        "/predict",
+        "/api/predict",
         files={"file": ("test.jpg", corrupted, "image/jpeg")}
     )
     assert response.status_code == 400
@@ -167,7 +167,7 @@ def test_model_info_success(mock_state, mock_path, client, mock_model):
     mock_path_instance.stat.return_value.st_size = 10 * 1024 * 1024  # 10 MB
     mock_path.return_value = mock_path_instance
 
-    response = client.get("/model/info")
+    response = client.get("/api/model/info")
     assert response.status_code == 200
     data = response.json()
     assert data["num_classes"] == 6
@@ -186,7 +186,7 @@ def test_model_info_not_loaded(mock_state, client):
         "checkpoint_path": None
     }[key]
 
-    response = client.get("/model/info")
+    response = client.get("/api/model/info")
     assert response.status_code == 503
     assert "Model not loaded" in response.json()["detail"]
 
@@ -224,7 +224,7 @@ def test_predict_with_png_image(mock_state, mock_predict, client, mock_model):
 
     # Make request
     response = client.post(
-        "/predict",
+        "/api/predict",
         files={"file": ("test.png", img_bytes, "image/png")}
     )
 
@@ -251,7 +251,7 @@ def test_predict_inference_error(mock_state, mock_predict, client, sample_image,
 
     # Make request
     response = client.post(
-        "/predict",
+        "/api/predict",
         files={"file": ("test.jpg", sample_image, "image/jpeg")}
     )
 
@@ -262,7 +262,7 @@ def test_predict_inference_error(mock_state, mock_predict, client, sample_image,
 
 def test_health_endpoint_structure(client):
     """Test health endpoint returns correct structure."""
-    response = client.get("/health")
+    response = client.get("/api/health")
     assert response.status_code == 200
     data = response.json()
 

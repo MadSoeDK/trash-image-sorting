@@ -6,8 +6,9 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, cast
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel, ConfigDict, Field
 import torch
@@ -128,8 +129,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Create API router for /api prefix
+api_router = APIRouter(prefix="/api")
 
-@app.get("/")
+
+@api_router.get("/")
 async def root():
     """Welcome endpoint with API documentation links."""
     return {
@@ -137,15 +141,15 @@ async def root():
         "version": "0.0.1",
         "description": "Classify trash images into 6 recycling categories using MobileNetV3",
         "endpoints": {
-            "predict": "POST /predict - Upload image for classification",
-            "health": "GET /health - Check API health",
-            "model_info": "GET /model/info - Get model information",
+            "predict": "POST /api/predict - Upload image for classification",
+            "health": "GET /api/health - Check API health",
+            "model_info": "GET /api/model/info - Get model information",
             "docs": "GET /docs - Interactive API documentation"
         }
     }
 
 
-@app.get("/health", response_model=HealthResponse)
+@api_router.get("/health", response_model=HealthResponse)
 async def health_check():
     """
     Check API and model health status.
@@ -160,7 +164,7 @@ async def health_check():
     )
 
 
-@app.get("/model/info", response_model=ModelInfoResponse)
+@api_router.get("/model/info", response_model=ModelInfoResponse)
 async def model_info():
     """
     Get information about the loaded model.
@@ -186,7 +190,7 @@ async def model_info():
     )
 
 
-@app.post("/predict", response_model=PredictionResponse)
+@api_router.post("/predict", response_model=PredictionResponse)
 async def predict_image(file: UploadFile = File(...)):
     """
     Classify a trash image into recycling categories.
@@ -265,3 +269,10 @@ async def predict_image(file: UploadFile = File(...)):
             status_code=500,
             detail=f"Prediction failed: {str(e)}"
         )
+
+
+# Include API router
+app.include_router(api_router)
+
+# Mount static files at root (must be after router to not override /api routes)
+app.mount("/", StaticFiles(directory="src/trashsorting/static", html=True), name="static")
