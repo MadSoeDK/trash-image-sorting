@@ -3,7 +3,6 @@ from pytorch_lightning import Trainer
 import logging
 import json
 import yaml
-import torch
 from pathlib import Path
 
 from trashsorting.data import TrashDataPreprocessed
@@ -69,7 +68,7 @@ def evaluate(
     metrics = dict(results[0]) if results else {}
 
     logger.info(f"Results: {metrics}")
-    print(f"\nEvaluation Results:")
+    print("\nEvaluation Results:")
     for key, value in metrics.items():
         print(f"  {key}: {value:.4f}")
 
