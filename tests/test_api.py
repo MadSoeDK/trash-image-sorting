@@ -152,14 +152,20 @@ def test_predict_corrupted_image(mock_state, client, mock_model):
     assert "Failed to process image" in response.json()["detail"]
 
 
+@patch('trashsorting.api.Path')
 @patch('trashsorting.api.model_state')
-def test_model_info_success(mock_state, client, mock_model):
+def test_model_info_success(mock_state, mock_path, client, mock_model):
     """Test model info endpoint with loaded model."""
     mock_state.__getitem__.side_effect = lambda key: {
         "model": mock_model,
         "error": None,
         "checkpoint_path": "models/best-epoch=15-val_loss=0.54.ckpt"
     }[key]
+
+    # Mock Path().stat().st_size to return a fake file size
+    mock_path_instance = MagicMock()
+    mock_path_instance.stat.return_value.st_size = 10 * 1024 * 1024  # 10 MB
+    mock_path.return_value = mock_path_instance
 
     response = client.get("/model/info")
     assert response.status_code == 200
