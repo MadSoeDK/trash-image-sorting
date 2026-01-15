@@ -2,6 +2,8 @@ import os
 
 from invoke.tasks import task
 from invoke.context import Context
+from dotenv import load_dotenv
+load_dotenv()
 
 WINDOWS = os.name == "nt"
 PROJECT_NAME = "trashsorting"
@@ -75,9 +77,66 @@ def docker_build_api(ctx: Context, progress: str = "plain") -> None:
 @task
 def docker_run_api(ctx: Context, port: int = 8000) -> None:
     """Run API docker container."""
-    ctx.run("docker rm -f trashsorting_api || true", echo=True, pty=not WINDOWS)
+    ctx.run("docker rm -f trashsorting || true", echo=True, pty=not WINDOWS)
     ctx.run(
         f"docker run -d -p {port}:8000 --name trashsorting api:latest",
+        echo=True,
+        pty=not WINDOWS
+    )
+
+@task
+def gcp_build_api(ctx: Context, progress: str = "plain") -> None:
+    """Build and tag API image for GCP."""
+    project_id = os.getenv("PROJECT_ID")
+    region = os.getenv("REGION", "europe-west1")
+    repo = os.getenv("GCP_REPO", "trashclassification")
+    if not project_id:
+        print("PROJECT_ID not set in environment variables.")
+        return
+
+    ctx.run(
+        f"sudo docker build -t {region}-docker.pkg.dev/{project_id}/{repo}/api:latest "
+        f"-f dockerfiles/api.dockerfile --progress={progress} .",
+        echo=True,
+        pty=not WINDOWS
+    )
+
+@task
+def gcp_push_api(ctx: Context) -> None:
+    """Push API image to Google Artifact Registry."""
+    project_id = os.getenv("PROJECT_ID")
+    region = os.getenv("REGION", "europe-west1")
+    repo = os.getenv("GCP_REPO", "trashclassification")
+    if not project_id:
+        print("PROJECT_ID not set in environment variables.")
+        return
+    # Authenticate Docker with gcloud credentials
+    ctx.run("cat key.json | sudo docker login -u _json_key --password-stdin https://europe-west1-docker.pkg.dev", echo=True, pty=not WINDOWS)
+    ctx.run(
+        f"sudo docker push {region}-docker.pkg.dev/{project_id}/{repo}/api:latest",
+        echo=True,
+        pty=not WINDOWS
+    )
+
+@task
+def gcp_deploy_api(ctx: Context, service_name: str = "trashsorting-api") -> None:
+    """Deploy API to Cloud Run."""
+    project_id = os.getenv("PROJECT_ID")
+    region = os.getenv("REGION", "europe-west1")
+    repo = os.getenv("GCP_REPO", "trashclassification")
+    if not project_id:
+        print("PROJECT_ID not set in environment variables.")
+        return
+
+    image_url = f"{region}-docker.pkg.dev/{project_id}/{repo}/api:latest"
+
+    ctx.run(
+        f"gcloud run deploy {service_name} "
+        f"--image {image_url} "
+        f"--platform managed "
+        f"--region {region} "
+        f"--allow-unauthenticated "
+        f"--project {project_id}",
         echo=True,
         pty=not WINDOWS
     )

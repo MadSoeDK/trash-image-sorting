@@ -2,10 +2,9 @@
 # Stage 1: Builder - install dependencies
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy dependency files first for better layer caching
+# Copy dependency files
 COPY uv.lock uv.lock
 COPY pyproject.toml pyproject.toml
 COPY README.md README.md
@@ -18,13 +17,11 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY src src/
 COPY models models/
 
-# Install the project itself
+# Install project
 RUN uv sync --frozen --no-dev
 
 # Stage 2: Runtime - minimal production image
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
-
-# Set working directory
 WORKDIR /app
 
 # Copy only the virtual environment from builder
@@ -35,8 +32,7 @@ COPY --from=builder /app/src /app/src
 COPY --from=builder /app/models /app/models
 COPY --from=builder /app/pyproject.toml /app/pyproject.toml
 
-# Expose port
-EXPOSE 8000
+EXPOSE 8080
 
-# Run the API
-ENTRYPOINT ["/app/.venv/bin/uvicorn", "src.trashsorting.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the API - use PORT env var if set, otherwise default to 8080
+CMD /app/.venv/bin/uvicorn src.trashsorting.api:app --host 0.0.0.0 --port ${PORT:-8080}

@@ -2,7 +2,7 @@
 
 This repository is a group project developed for the course Machine Learning Operations (02476) at The Technical University of Denmark (DTU).
 
-The project aims at finetuning an open source model for classification of images of trash into categories of recyclable materials. Focus will be kept on a flexible solution, that utilizes a range of MLOps technologies 
+The project aims at finetuning an open source model for classification of images of trash into categories of recyclable materials. Focus will be kept on a flexible solution, that utilizes a range of MLOps technologies
 
 ## Project Description
 Our customer requests a lightweight image classification solution capable of categorizing images of trash into a fixed set of recycling categories. The solution must be able to run locally on mobile devices with limited hardware resources. Additionally, it should be easy to extend the system with new recycling categories in order to adapt to changes in recycling regulations and differences across markets.
@@ -20,6 +20,82 @@ In our implementation, we will focus on utilizing tools for stable cloud-deploym
 - [MobileNet-v3](https://huggingface.co/timm/mobilenetv3_small_100.lamb_in1k)
 
 
+## Installation
+The easiest way to get started is using the provided dev container which includes all dependencies pre-configured.
+
+1. **Prerequisites:**
+   - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+   - [VS Code](https://code.visualstudio.com/) with [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+2. **Setup:**
+   ```bash
+   # Clone the repository
+   git clone https://github.com/madsoedk/trash-image-sorting.git
+   cd trash-image-sorting
+
+3. Open in Dev Container:
+   Open the project in VS Code
+   Press F1 and select "Dev Containers: Reopen in Container"
+   Wait for the container to build and dependencies to install (this may take a few minutes the first time)
+
+## Deployment
+Complete installation steps first to make sure you have the required dependencies.
+### Prerequisites
+1. Install Google Cloud SDK (skip if project is opened with `.devcontainer/devcontainer.json` that automatically installs the SDK): [https://docs.cloud.google.com/sdk/docs/install-sdk](https://docs.cloud.google.com/sdk/docs/install-sdk)
+2. Docker should be installed, check by running the command `docker` in your terminal, otherwise install docker on your system.
+3. Authenticate and setup
+```
+# Login to GCP
+gcloud auth login
+
+# Set your project ID
+gcloud config set project trashclassification-484408
+
+# Enable required APIs
+gcloud services enable artifactregistry.googleapis.com
+gcloud services enable run.googleapis.com
+
+# Configure Docker authentication
+gcloud auth configure-docker europe-west1-docker.pkg.dev
+```
+4. Create `.env` file with environment variables (see `.env.example`)
+
+### Deploy to Google Cloud Run
+5. Build and push docker images
+```
+# Build the image for GCP
+invoke gcp-build-api
+
+# Push to Artifact Registry
+invoke gcp-push-api
+```
+6. Deploy to Cloud Run
+```
+gcloud run deploy trashsorting-api \
+  --image europe-west1-docker.pkg.dev/trashclassification-484408/trashclassification/api:latest \
+  --platform managed \
+  --region europe-west1 \
+  --allow-unauthenticated \
+  --memory 2Gi \
+  --cpu 2 \
+  --timeout 300 \
+  --port 8000
+```
+7. Get Service URL
+```
+gcloud run services describe trashsorting-api \
+  --region europe-west1 \
+  --format 'value(status.url)'
+```
+8. Test deployed API (Give it a minute or two to boot)
+```
+# Set service URL
+export SERVICE_URL=$(gcloud run services describe trashsorting-api \
+  --region europe-west1 \
+  --format 'value(status.url)')
+
+curl ${SERVICE_URL}/api/health
+```
 
 ## Project structure
 
