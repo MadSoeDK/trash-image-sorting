@@ -193,3 +193,6 @@ claude.md
 # training logs
 lightning_logs/
 wandb/
+
+# GCP key
+key.json
