@@ -1,0 +1,9 @@
+outs:
+- md5: 6d0d9ac72360a96f8fcb7dd37e269601
+  size: 1332
+  hash: md5
+  path: all_metadata.pt
+  cloud:
+    remote_storage:
+      etag: 08d2e0ffd4bc8d92031001
+      version_id: '1768477658443858'

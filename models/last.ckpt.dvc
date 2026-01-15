@@ -1,0 +1,9 @@
+outs:
+- md5: 19ae583bde6be0790abb459268bc0b74
+  size: 134289864
+  hash: md5
+  path: last.ckpt
+  cloud:
+    remote_storage:
+      etag: 08a9f69ae5bc8d92031001
+      version_id: '1768477692443433'
