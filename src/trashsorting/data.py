@@ -147,11 +147,11 @@ class TrashData(Dataset):
         return image_tensor, label
 
     def preprocess(self, output_folder: str | Path, fraction: float = 1.0, seed: int = 42) -> None:
-        """Preprocess the raw data and save it to a single file.
+        """Preprocess the raw data and save it to separate files.
 
         This method iterates through the entire dataset (regardless of split),
-        applies transforms, and saves all processed images and labels to a
-        single .pt file for faster loading in subsequent training runs.
+        applies transforms, and saves all processed images, labels, and metadata to
+        separate .pt files for faster loading in subsequent training runs.
 
         Args:
             output_folder: Directory where preprocessed data will be saved.
@@ -169,7 +169,7 @@ class TrashData(Dataset):
             fraction=fraction, seed=seed
         )
 
-        logger.info(f"Preprocessing {len(full_dataset)} samples to {output_path}/trashnet.pt...")
+        logger.info(f"Preprocessing {len(full_dataset)} samples to {output_path}...")
 
         # Process all samples
         images = []
@@ -200,25 +200,23 @@ class TrashData(Dataset):
             "torchvision_version": torchvision.__version__,
         }
 
-        # Save everything in a single file
-        save_data = {
+        # Save to single file for DVC tracking
+        output_file = output_path / "trashnet.pt"
+        torch.save({
             "images": images_tensor,
             "labels": labels_tensor,
             "metadata": metadata,
-        }
+        }, output_file)
 
-        output_file = output_path / "trashnet.pt"
-        torch.save(save_data, output_file)
-
-        logger.info(f"Preprocessing complete! Saved {len(full_dataset)} samples to {output_file}")
-        logger.info(f"  File size: {output_file.stat().st_size / (1024*1024):.1f} MB")
+        logger.info(f"Preprocessing complete! Saved {len(full_dataset)} samples")
+        logger.info(f"  Output: {output_file} ({output_file.stat().st_size / (1024*1024):.1f} MB)")
 
 
 class TrashDataPreprocessed(Dataset):
     """PyTorch Dataset for preprocessed TrashNet data.
 
-    Loads preprocessed data from data/processed/trashnet.pt for fast training.
-    If the preprocessed file doesn't exist, falls back to using TrashData.
+    Loads preprocessed data from data/processed/trashnet.pt
+    for fast training. If the preprocessed file doesn't exist, falls back to using TrashData.
 
     This dataset provides 10-20x faster loading compared to TrashData by
     loading preprocessed tensors directly from disk rather than processing
@@ -270,12 +268,13 @@ class TrashDataPreprocessed(Dataset):
         self.default_dataset = None
 
         # Check if preprocessed file exists
-        self.preprocessed_file = self.data_path / "processed" / "trashnet.pt"
+        processed_dir = self.data_path / "processed"
+        self.preprocessed_file = processed_dir / "trashnet.pt"
 
         if not self.preprocessed_file.exists():
-            logger.warning(f"Preprocessed file not found at {self.preprocessed_file}")
+            logger.warning(f"Preprocessed files not found at {processed_dir}")
             logger.warning("Falling back to TrashData (on-demand loading)")
-            logger.info(f"To use preprocessed data, run: python -m trashsorting.data {self.data_path} --fraction {fraction}")
+            logger.info(f"To use preprocessed data, run: python -m trashsorting.data data --fraction {fraction}")
 
             # Fall back to TrashData
             raw_path = self.data_path / "raw"
@@ -295,7 +294,7 @@ class TrashDataPreprocessed(Dataset):
             if abs(self.metadata["fraction"] - fraction) > 0.001:
                 logger.warning(f"Requested fraction {fraction} differs from preprocessed fraction {self.metadata['fraction']}")
                 logger.warning(f"Falling back to TrashData with fraction {fraction}")
-                logger.info(f"To use preprocessed data, run: python -m trashsorting.data {self.data_path} --fraction {fraction}")
+                logger.info(f"To use preprocessed data, run: python -m trashsorting.data data --fraction {fraction}")
 
                 # Fall back to TrashData
                 raw_path = self.data_path / "raw"
@@ -338,13 +337,10 @@ class TrashDataPreprocessed(Dataset):
             self.class_to_idx = self.default_dataset.class_to_idx
 
     def _load_preprocessed(self) -> None:
-        """Load preprocessed data from file."""
+        """Load preprocessed data from trashnet.pt."""
+        logger.info(f"Loading preprocessed data from {self.preprocessed_file}...")
+
         data = torch.load(self.preprocessed_file, weights_only=False)
-
-        # Validate structure
-        if not all(key in data for key in ["images", "labels", "metadata"]):
-            raise ValueError("Invalid preprocessed file format")
-
         self.images = data["images"]
         self.labels = data["labels"]
         self.metadata = data["metadata"]
@@ -440,7 +436,7 @@ def preprocess(
     fraction: float = typer.Option(1.0, help="Fraction of data to preprocess (0.0-1.0)"),
     seed: int = typer.Option(42, help="Random seed for shuffling"),
 ) -> None:
-    """CLI command to preprocess the TrashNet dataset into a single file.
+    """CLI command to preprocess the TrashNet dataset.
 
     The preprocessed data will be saved to data_path/processed/trashnet.pt
 
@@ -464,7 +460,7 @@ def preprocess(
     dataset = TrashData(raw_path, split="train", fraction=fraction)
     dataset.preprocess(processed_path, fraction=fraction, seed=seed)
 
-    logger.info(f"✓ Preprocessing complete! Data saved to {processed_path / 'trashnet.pt'}")
+    logger.info(f"✓ Preprocessing complete! Data saved to {processed_path}/")
 
 
 if __name__ == "__main__":
