@@ -55,15 +55,28 @@ def predict(ctx: Context, image_path: str, checkpoint: str = "models/best-*.ckpt
     ctx.run(f"uv run src/{PROJECT_NAME}/predict.py {image_path} {checkpoint} {verbosity_flag}", echo=True, pty=not WINDOWS)
 
 @task
-def docker_build(ctx: Context, progress: str = "plain") -> None:
+def docker_train_build(ctx: Context, progress: str = "plain") -> None:
     """Build docker images."""
     ctx.run(
         f"docker build -t train:latest . -f dockerfiles/train.dockerfile --progress={progress}",
         echo=True,
         pty=not WINDOWS
     )
+
+@task
+def docker_build_api(ctx: Context, progress: str = "plain") -> None:
+    """Build API docker image."""
     ctx.run(
         f"docker build -t api:latest . -f dockerfiles/api.dockerfile --progress={progress}",
+        echo=True,
+        pty=not WINDOWS
+    )
+
+@task
+def docker_run_api(ctx: Context, port: int = 8000) -> None:
+    """Run API docker container."""
+    ctx.run(
+        f"docker run -d -p {port}:8000 --name trashsorting_api api:latest",
         echo=True,
         pty=not WINDOWS
     )
