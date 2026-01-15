@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Fix Python version to 3.13 because of pytorch compatibility
 ENV UV_PYTHON=3.13
-
+ENV HF_HOME="/app/data/raw"
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
 

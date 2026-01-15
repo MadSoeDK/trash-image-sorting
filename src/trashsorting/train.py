@@ -33,8 +33,8 @@ def train(
 
     trainer.fit(
         model,
-        train_dataloaders=DataLoader(TrashDataPreprocessed("data", split="train", fraction=fraction), batch_size=batch_size, shuffle=True),
-        val_dataloaders=DataLoader(TrashDataPreprocessed("data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False)
+        train_dataloaders=DataLoader(TrashDataPreprocessed("./data", split="train", fraction=fraction), batch_size=batch_size, shuffle=True),
+        val_dataloaders=DataLoader(TrashDataPreprocessed("./data", split="val", fraction=fraction), batch_size=batch_size, shuffle=False)
     )
 
     logging.info(f"Best model saved at: {checkpoint_callback.best_model_path}")

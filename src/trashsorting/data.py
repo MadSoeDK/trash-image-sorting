@@ -43,7 +43,7 @@ class TrashData(Dataset):
 
     def __init__(
         self,
-        data_path: str | Path,
+        data_path: str | Path = "./data/raw",
         split: Literal["train", "test", "val", "all"] = "train",
         transform: transforms.Compose | None = None,
         fraction: float = 1.0,
@@ -67,7 +67,7 @@ class TrashData(Dataset):
         full_dataset = load_dataset(
             "garythung/trashnet",
             split="train",
-            cache_dir=str(self.data_path),
+            # cache_dir=str(self.data_path),
         )
 
         # Shuffle the dataset to ensure uniform sampling across classes
