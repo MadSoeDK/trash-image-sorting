@@ -80,7 +80,7 @@ class ModelInfoResponse(BaseModel):
 async def lifespan(app: FastAPI):
     """Load model at startup and cleanup on shutdown."""
     # Startup: Load model
-    checkpoint_path = Path("models/best-epoch=15-val_loss=0.54.ckpt")
+    checkpoint_path = Path("models/model.ckpt")
 
     logger.info(f"Loading model from {checkpoint_path}")
     try:
