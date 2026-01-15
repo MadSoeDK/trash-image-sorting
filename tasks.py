@@ -75,8 +75,9 @@ def docker_build_api(ctx: Context, progress: str = "plain") -> None:
 @task
 def docker_run_api(ctx: Context, port: int = 8000) -> None:
     """Run API docker container."""
+    ctx.run("docker rm -f trashsorting_api || true", echo=True, pty=not WINDOWS)
     ctx.run(
-        f"docker run -d -p {port}:8000 --name trashsorting_api api:latest",
+        f"docker run -d -p {port}:8000 --name trashsorting api:latest",
         echo=True,
         pty=not WINDOWS
     )

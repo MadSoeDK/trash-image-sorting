@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trash Image Classifier</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #4CAF50;
+        }
+        .upload-area input {
+            display: none;
+        }
+        .preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .predicted-class {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #4CAF50;
+            text-transform: capitalize;
+        }
+        .confidence {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .prob-bar {
+            margin: 8px 0;
+        }
+        .prob-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .prob-track {
+            background: #eee;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .prob-fill {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            color: #d32f2f;
+            text-align: center;
+            padding: 20px;
+            background: #ffebee;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trash Image Classifier</h1>
+
+    <div class="upload-area" id="uploadArea">
+        <input type="file" id="fileInput" accept="image/*">
+        <p>Click or drag an image here to classify</p>
+    </div>
+
+    <div class="preview" id="preview"></div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Classifying...</p>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+        <div class="predicted-class" id="predictedClass"></div>
+        <div class="confidence" id="confidence"></div>
+        <div id="probabilities"></div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const result = document.getElementById('result');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file');
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+
+            // Reset UI
+            error.classList.remove('show');
+            result.classList.remove('show');
+            loading.classList.add('show');
+
+            // Send to API
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Prediction failed');
+                }
+
+                const data = await response.json();
+                showResult(data);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        function showResult(data) {
+            document.getElementById('predictedClass').textContent = data.predicted_class;
+            document.getElementById('confidence').textContent =
+                `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+
+            const probsHtml = Object.entries(data.all_probabilities)
+                .sort((a, b) => b[1] - a[1])
+                .map(([cls, prob]) => `
+                    <div class="prob-bar">
+                        <div class="prob-label">
+                            <span>${cls}</span>
+                            <span>${(prob * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="prob-track">
+                            <div class="prob-fill" style="width: ${prob * 100}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+
+            document.getElementById('probabilities').innerHTML = probsHtml;
+            result.classList.add('show');
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('show');
+        }
+    </script>
+</body>
+</html>
