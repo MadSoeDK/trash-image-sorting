@@ -1,0 +1,8 @@
+# docker compose up
+services:
+  train:
+    image: train_1:latest
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    entrypoint: ["uv", "run", "src/trashsorting/train.py"]
