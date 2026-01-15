@@ -16,6 +16,6 @@ evaluate:
   checkpoint_path: "models/model.ckpt"
   data_path: "data"
   batch_size: 32
-  output: "models/metrics.json"
+  output: "reports/eval_metrics.json"
   num_workers: 0 # set to 0 for local testing; increase for better performance on larger systems
   use_wandb_logger: false # false for local testing; set to true to enable Weights & Biases logging

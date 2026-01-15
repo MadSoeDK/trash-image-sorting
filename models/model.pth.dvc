@@ -1,0 +1,9 @@
+outs:
+- md5: a4c8b3adb6f2041008913f96c2036c89
+  size: 44793026
+  hash: md5
+  path: model.pth
+  cloud:
+    remote_storage:
+      etag: 08fcb8efe3bc8d92031001
+      version_id: '1768477689633916'

@@ -3,6 +3,7 @@ stages:
     cmd: python -m trashsorting.data data --fraction ${data.fraction} --seed ${data.seed}
     deps:
       - src/trashsorting/data.py
+      - data/raw
     params:
       - data.fraction
       - data.seed

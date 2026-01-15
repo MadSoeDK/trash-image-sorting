@@ -1,0 +1,60 @@
+outs:
+- hash: md5
+  path: raw
+  files:
+  - relpath: 
+      data_raw_garythung___trashnet_default_0.0.0_94cd17ebfd6702bf62281d3c89f22ff649815b46.lock
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
+    cloud:
+      remote_storage:
+        etag: 0896ade1ccbb8d92031001
+        version_id: '1768477372733078'
+  - relpath: 
+      garythung___trashnet/default/0.0.0/94cd17ebfd6702bf62281d3c89f22ff649815b46.incomplete_info.lock
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
+    cloud:
+      remote_storage:
+        etag: 08c0e6f1ccbb8d92031001
+        version_id: '1768477373002560'
+  - relpath: 
+      garythung___trashnet/default/0.0.0/94cd17ebfd6702bf62281d3c89f22ff649815b46/cache-618b7bf173425671.arrow
+    md5: d740c7fb7c0f3c63af47e4d5e05eb598
+    size: 41600
+    cloud:
+      remote_storage:
+        etag: 08c7f9f0ccbb8d92031001
+        version_id: '1768477372988615'
+  - relpath: 
+      garythung___trashnet/default/0.0.0/94cd17ebfd6702bf62281d3c89f22ff649815b46/cache-a6ae5f979a9a6062.arrow
+    md5: aca3dec7e3e70efaf34d19a7e8ff28cf
+    size: 41600
+    cloud:
+      remote_storage:
+        etag: 089dc7f4ccbb8d92031001
+        version_id: '1768477373047709'
+  - relpath: 
+      garythung___trashnet/default/0.0.0/94cd17ebfd6702bf62281d3c89f22ff649815b46/dataset_info.json
+    md5: f7b8a26b17d119bfb39af0c136a185c3
+    size: 874
+    cloud:
+      remote_storage:
+        etag: 089dedf1ccbb8d92031001
+        version_id: '1768477373003421'
+  - relpath: 
+      garythung___trashnet/default/0.0.0/94cd17ebfd6702bf62281d3c89f22ff649815b46/trashnet-train.arrow
+    md5: 31a07a497f29f39a42e5be6d595f24a4
+    size: 1052744
+    cloud:
+      remote_storage:
+        etag: 08ce9ef9ccbb8d92031001
+        version_id: '1768477373124430'
+  - relpath: 
+      garythung___trashnet/default/0.0.0/94cd17ebfd6702bf62281d3c89f22ff649815b46_builder.lock
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
+    cloud:
+      remote_storage:
+        etag: 08e8b1e7ccbb8d92031001
+        version_id: '1768477372831976'

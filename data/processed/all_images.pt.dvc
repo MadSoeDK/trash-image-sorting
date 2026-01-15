@@ -1,0 +1,9 @@
+outs:
+- md5: 91bc1c6f79bbd18f1680d548882d704f
+  size: 760468651
+  hash: md5
+  path: all_images.pt
+  cloud:
+    remote_storage:
+      etag: 08c1abc4debc8d92031001
+      version_id: '1768477678441921'

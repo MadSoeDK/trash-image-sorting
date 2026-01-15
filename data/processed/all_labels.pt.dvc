@@ -1,0 +1,9 @@
+outs:
+- md5: 538769449618552a29e1373447914ab0
+  size: 11243
+  hash: md5
+  path: all_labels.pt
+  cloud:
+    remote_storage:
+      etag: 08e3eb85d5bc8d92031001
+      version_id: '1768477658543587'

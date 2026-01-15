@@ -180,11 +180,15 @@ cython_debug/
 # AI agents
 claude.md
 
-# data
-data/
+# data - ignore the actual data but track DVC files
+/data/raw/*
+!/data/raw.dvc
+/data/processed/*
+!/data/processed/*.dvc
 
-# models
-models/
+# models - ignore the actual models but track DVC files
+/models/*
+!/models/*.dvc
 
 # training logs
 lightning_logs/
