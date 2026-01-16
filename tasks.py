@@ -141,6 +141,90 @@ def gcp_deploy_api(ctx: Context, service_name: str = "trashsorting-api") -> None
         pty=not WINDOWS
     )
 
+@task
+def gcp_build_train(ctx: Context, progress: str = "plain") -> None:
+    """Build and tag training image for GCP."""
+    project_id = os.getenv("PROJECT_ID")
+    region = os.getenv("REGION", "europe-west1")
+    repo = os.getenv("GCP_REPO", "trashclassification")
+    if not project_id:
+        print("PROJECT_ID not set in environment variables.")
+        return
+
+    ctx.run(
+        f"sudo docker build -t {region}-docker.pkg.dev/{project_id}/{repo}/train:latest "
+        f"-f dockerfiles/train.dockerfile --progress={progress} .",
+        echo=True,
+        pty=not WINDOWS
+    )
+
+@task
+def gcp_push_train(ctx: Context) -> None:
+    """Push training image to Google Artifact Registry."""
+    project_id = os.getenv("PROJECT_ID")
+    region = os.getenv("REGION", "europe-west1")
+    repo = os.getenv("GCP_REPO", "trashclassification")
+    if not project_id:
+        print("PROJECT_ID not set in environment variables.")
+        return
+
+    # Authenticate Docker with gcloud credentials
+    ctx.run("cat key.json | sudo docker login -u _json_key --password-stdin https://europe-west1-docker.pkg.dev", echo=True, pty=not WINDOWS)
+    ctx.run(
+        f"sudo docker push {region}-docker.pkg.dev/{project_id}/{repo}/train:latest",
+        echo=True,
+        pty=not WINDOWS
+    )
+
+@task
+def gcp_train_vertex(ctx: Context,
+                     job_name: str = None,
+                     bucket_name: str = None,
+                     machine_type: str = "n1-standard-4",
+                     accelerator: str = None) -> None:
+    """Submit training job to Vertex AI."""
+    project_id = os.getenv("PROJECT_ID")
+    region = os.getenv("REGION", "europe-west1")
+    repo = os.getenv("GCP_REPO", "trashclassification")
+    bucket_name = bucket_name or os.getenv("GCS_BUCKET_NAME")
+
+    if not all([project_id, bucket_name]):
+        print("PROJECT_ID and GCS_BUCKET_NAME must be set.")
+        return
+
+    # Generate job name if not provided
+    if not job_name:
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        job_name = f"trash_training_{timestamp}"
+
+    image_url = f"{region}-docker.pkg.dev/{project_id}/{repo}/train:latest"
+
+    # Build the command
+    cmd = (
+        f"gcloud ai custom-jobs create "
+        f"--region={region} "
+        f"--display-name={job_name} "
+        f"--worker-pool-spec=machine-type={machine_type},"
+        f"replica-count=1,"
+        f"container-image-uri={image_url} "
+        f"--project={project_id}"
+    )
+
+    # Add accelerator if specified (e.g., "NVIDIA_TESLA_T4,1")
+    if accelerator:
+        cmd += f",accelerator-type={accelerator.split(',')[0]},accelerator-count={accelerator.split(',')[1]}"
+
+    # Add environment variables for GCS
+    cmd += (
+        f" --args=--set-env-vars="
+        f"GCS_BUCKET_NAME={bucket_name},"
+        f"GCS_DATA_PATH=data,"
+        f"GCS_MODEL_PATH=models"
+    )
+
+    ctx.run(cmd, echo=True, pty=not WINDOWS)
+
 # Documentation commands
 @task
 def build_docs(ctx: Context) -> None:

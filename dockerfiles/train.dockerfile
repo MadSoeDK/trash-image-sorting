@@ -3,6 +3,13 @@
 
 FROM ghcr.io/astral-sh/uv:debian-slim AS base
 
+# Install Google Cloud SDK for GCS access
+RUN apt-get update && apt-get install -y curl gnupg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    apt-get update && apt-get install -y google-cloud-cli && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Install the project into `/app`
 WORKDIR /app
 
@@ -38,4 +45,8 @@ COPY . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked
 
-ENTRYPOINT ["uv", "run", "src/trashsorting/train.py"]
+# Copy training script wrapper
+COPY scripts/train_gcp.sh /app/train_gcp.sh
+RUN chmod +x /app/train_gcp.sh
+
+ENTRYPOINT ["/app/train_gcp.sh"]
