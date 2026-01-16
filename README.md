@@ -38,9 +38,7 @@ The easiest way to get started is using the provided dev container which include
    Press F1 and select "Dev Containers: Reopen in Container"
    Wait for the container to build and dependencies to install (this may take a few minutes the first time)
 
-## Deployment
-Complete installation steps first to make sure you have the required dependencies.
-### Prerequisites
+## Setup before training and deployment
 1. Install Google Cloud SDK (skip if project is opened with `.devcontainer/devcontainer.json` that automatically installs the SDK): [https://docs.cloud.google.com/sdk/docs/install-sdk](https://docs.cloud.google.com/sdk/docs/install-sdk)
 2. Docker should be installed, check by running the command `docker` in your terminal, otherwise install docker on your system.
 3. Authenticate and setup
@@ -54,22 +52,67 @@ gcloud config set project trashclassification-484408
 # Enable required APIs
 gcloud services enable artifactregistry.googleapis.com
 gcloud services enable run.googleapis.com
+gcloud services enable compute.googleapis.com
+gcloud services enable aiplatform.googleapis.com
+gcloud services enable storage.googleapis.com
 
 # Configure Docker authentication
 gcloud auth configure-docker europe-west1-docker.pkg.dev
 ```
 4. Create `.env` file with environment variables (see `.env.example`)
 
-### Deploy to Google Cloud Run
-5. Build and push docker images
-```
-# Build the image for GCP
-invoke gcp-build-api
+## Deployment
+Complete installation in [setup section](#Setup-bfore-training-ad-deployment) first to make sure you have the required dependencies.
+
+## Train in Google Cloud Vertex
+1. Build and push docker images
+```bash
+# Build the train-image for GCP
+uv run invoke gcp-build-train
 
 # Push to Artifact Registry
-invoke gcp-push-api
+uv run invoke gcp-push-train
 ```
-6. Deploy to Cloud Run
+
+2. Submit training job
+
+```bash
+# Basic training job (CPU only)
+invoke gcp-train-vertex
+
+# Example with custom settings
+invoke gcp-train-vertex \
+    --job-name my-training-job \
+    --bucket-name your-bucket-name \
+    --machine-type n1-standard-4
+
+
+```
+
+To follow custom training job follow instructions in terminal or find JOB_ID through:
+
+```bash
+# List jobs
+gcloud ai custom-jobs list --region=europe-west1
+```
+And insert in the following:
+
+```bash
+# View job details
+gcloud ai custom-jobs describe JOB_ID --region=europe-west1
+```
+
+### Deploy to Google Cloud Run
+1. Build and push docker images
+```
+# Build the API-image for GCP
+uv run invoke gcp-build-api
+
+# Push to Artifact Registry
+uv run invoke gcp-push-api
+
+```
+2. Deploy to Cloud Run
 ```
 gcloud run deploy trashsorting-api \
   --image europe-west1-docker.pkg.dev/trashclassification-484408/trashclassification/api:latest \
@@ -81,13 +124,13 @@ gcloud run deploy trashsorting-api \
   --timeout 300 \
   --port 8000
 ```
-7. Get Service URL
+3. Get Service URL
 ```
 gcloud run services describe trashsorting-api \
   --region europe-west1 \
   --format 'value(status.url)'
 ```
-8. Test deployed API (Give it a minute or two to boot)
+4. Test deployed API (Give it a minute or two to boot)
 ```
 # Set service URL
 export SERVICE_URL=$(gcloud run services describe trashsorting-api \
