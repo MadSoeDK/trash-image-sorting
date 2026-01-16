@@ -167,7 +167,7 @@ s215805, s260399, s214964, s234855
 >
 > Answer:
 
---- question 4 fill here ---
+We used `uv` for managing our dependencies, which are all listed in the `pyproject.toml` file. This includes both production dependencies like PyTorch, FastAPI, and Hydra, as well as development tools like pytest and ruff in a separate dev group. To set up an identical environment, a new team member would need to install `uv` first, then run `uv sync` in the project root. This reads the lock file and installs all dependencies with exact versions. We also provide a devcontainer configuration that sets up the complete development environment automatically in VS Code. Lastly, for data, we use DVC to download the datasets from a Google Cloud Platform(GCP) bucket.
 
 ### Question 5
 
@@ -183,7 +183,7 @@ s215805, s260399, s214964, s234855
 >
 > Answer:
 
---- question 5 fill here ---
+We started with the cookiecutter MLOps template and filled out the core folders like `src/trashsorting`, `configs`, `tests`, and `data`. The main module includes `data.py` for loading our trash dataset, `model.py` for defining the model architecture, `train.py` for training, and `api.py` for the FastAPI endpoints. The root `model` contains the output from the training phase with model weights etc. We used the `dockerfiles` folder with separate dockerfiles for training and API deployment. We also created a `static` folder inside the core module for frontend files and used the `notebooks` folder for exploratory analysis and demos. We removed the `visualize.py` file since we ended up doing most visualization in notebooks instead. Overall we followed the template structure closely.
 
 ### Question 6
 
