@@ -345,7 +345,7 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 15 fill here ---
+We created two main Docker images: one for training and one for API deployment. The training image uses `uv` for dependency management and mounts volumes for data and models. You can run it with `docker run --rm -v ./data:/app/data -v ./models:/app/models train_1:latest`. We also set up `docker-compose.yaml` for easier orchestration. The API dockerfile uses a multi-stage build to keep the production image small. The builder stage installs dependencies, then the runtime stage only copies what's needed. To run the API: `docker run -p 8080:8080 api:latest`. Both dockerfiles are in the `dockerfiles/` folder. The API image was deployed to Google Cloud Run for production. Link to train dockerfile: [train.dockerfile](https://github.com/MadSoeDK/trash-image-sorting/blob/main/dockerfiles/train.dockerfile)
 
 ### Question 16
 
@@ -451,7 +451,7 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 23 fill here ---
+We built an API using FastAPI. The main endpoint is `/api/predict`, which accepts image uploads and returns the predicted trash category with confidence scores for all six classes (cardboard, glass, metal, paper, plastic, trash). We used a lifespan context manager to load the model once at startup rather than on every request, which improves performance. The API includes proper error handling for invalid images and model loading failures. We added CORS middleware to allow frontend access and created additional endpoints like `/api/health` for monitoring and `/api/model/info` for getting model details. We also used Pydantic models for request/response validation with schema examples. The API serves a static frontend at the root path, so users can interact with it through a web interface. Everything is documented with OpenAPI/Swagger available at `/docs`.
 
 ### Question 24
 
@@ -467,7 +467,7 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 24 fill here ---
+We deployed the API both locally and to the cloud. We started by testing locally using `uvicorn src.trashsorting.api:app --reload`, which worked well for development. For production, we deployed to Google Cloud Run, which was a good fit since it handles autoscaling and only charges for actual usage. The deployment process involved building the Docker image using our multi-stage dockerfile, pushing it to Google Artifact Registry, and then deploying it to Cloud Run. The API is live at [https://trashsorting-api-fafnprv65a-ew.a.run.app/](https://trashsorting-api-fafnprv65a-ew.a.run.app/). To invoke the service, you can use: `curl -X POST -F "file=@trash_image.jpg" https://trashsorting-api-fafnprv65a-ew.a.run.app/api/predict`. The API also has a web frontend at the root URL where users can upload images through their browser.
 
 ### Question 25
 
