@@ -64,7 +64,7 @@ gcloud auth configure-docker europe-west1-docker.pkg.dev
 ## Deployment
 Complete installation in [setup section](#Setup-bfore-training-ad-deployment) first to make sure you have the required dependencies.
 
-## Train in Google Cloud Vertex
+### Train in Google Cloud Vertex
 1. Build and push docker images
 ```bash
 # Build the train-image for GCP
