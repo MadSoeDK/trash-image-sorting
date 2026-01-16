@@ -198,7 +198,7 @@ We started with the cookiecutter MLOps template and filled out the core folders 
 >
 > Answer:
 
---- question 6 fill here ---
+We used Ruff for both linting and formatting. We added type hints throughout our code using Python's typing module. Pre-commit hooks helped us catch issues before they get committed, things like trailing whitespace, broken YAML files, and large files. These practices matter a lot in team projects because they keep the codebase consistent and readable. Type hints especially help catch bugs early and make it easier to understand what functions expect as inputs. When multiple people are working on the same code, having automated formatting means you don't waste time arguing about style or reviewing formatting changes.
 
 ## Version control
 
@@ -247,7 +247,7 @@ We started with the cookiecutter MLOps template and filled out the core folders 
 >
 > Answer:
 
---- question 9 fill here ---
+We used branches and pull requests throughout the project. Each team member typically worked on their own feature branches with names like `mads/frontend-app`, `vhy/dvc-google-cloud-storage`, or `data-loading` for specific features. When a feature was ready, we'd open a pull request to merge it into main. This let other team members review the code before merging, which helped catch bugs and ensure code quality. We also had some automated checks running on PRs through GitHub Actions. The PR workflow was especially helpful when multiple people were working on different parts of the codebase simultaneously. It helped prevent merge conflicts and made sure everyone knew what changes were being made. We kept branch protection simple. Merges to main required pull requests, but we skipped mandatory reviewer approvals to move faster given the short timeframe. Stricter protections would be needed for larger or open source projects.
 
 ### Question 10
 
