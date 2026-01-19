@@ -64,10 +64,10 @@ gcloud auth configure-docker europe-west1-docker.pkg.dev
 5. Build and push docker images
 ```
 # Build the image for GCP
-invoke gcp-build-api
+uv invoke gcp-build-api
 
 # Push to Artifact Registry
-invoke gcp-push-api
+uv invoke gcp-push-api
 ```
 6. Deploy to Cloud Run
 ```
