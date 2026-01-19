@@ -1,3 +1,4 @@
+# Autmatic train workflow
 name: Build and Push Training Image
 
 on:
