@@ -2,18 +2,19 @@
 name: Build and Push Training Image
 
 on:
-  push:
-    branches:
-      - main
-      - jeppe/automatic-training-image-build # Temporary branch for testing
-    paths:
-      # Trigger when training-related files change
-      - 'src/trashsorting/train.py'
-      - 'src/trashsorting/model.py'
-      - 'src/trashsorting/data.py'
-      - 'dockerfiles/train.dockerfile'
-      - 'scripts/train_gcp.sh'
-      - 'params.yaml'
+  ### Uncomment for test manually
+  # push:
+  #   branches:
+  #     - main
+  #     - jeppe/automatic-training-image-build # Temporary branch for testing
+  #   paths:
+  #     # Trigger when training-related files change
+  #     - 'src/trashsorting/train.py'
+  #     - 'src/trashsorting/model.py'
+  #     - 'src/trashsorting/data.py'
+  #     - 'dockerfiles/train.dockerfile'
+  #     - 'scripts/train_gcp.sh'
+  #     - 'params.yaml'
   workflow_dispatch:  # Allow manual triggering
     inputs:
       tag:
