@@ -26,9 +26,10 @@ def train(
     batch_size: int = 32,
     max_epochs: int = 10,
     use_wandb_logger: bool = True,
+    freeze_backbone: bool = True,
     num_workers: int = 4
 ):
-    model = TrashModel()
+    model = TrashModel(freeze_backbone = freeze_backbone)
 
     # Configure checkpoint callback to save best model with fixed name for DVC
     checkpoint_callback = ModelCheckpoint(

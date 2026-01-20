@@ -197,5 +197,8 @@ wandb/
 # GCP key
 key.json
 
-# tb_logs for Profiling (uncompressed files are too large for GitHub)
-tb_logs
+# tb_logs for Profiling (uncompressed files are too large for GitHub):
+# Ignore everything inside tb_logs
+tb_logs/**
+# But do track zip files at the top level of tb_logs
+!tb_logs/*.zip

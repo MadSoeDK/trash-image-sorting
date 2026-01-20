@@ -7,7 +7,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TrashModel(LightningModule):
-    def __init__(self, model_name="mobilenetv3_small_100", num_classes: int = 6, lr: float = 1e-3, pretrained: bool = True):
+    def __init__(
+        self, 
+        model_name="mobilenetv3_small_100", 
+        num_classes: int = 6, 
+        lr: float = 1e-3, 
+        pretrained: bool = True,
+        freeze_backbone: bool = True # NOT unused! Collected by self.save_hyperparameters() below.
+    ):
         super().__init__()
         self.save_hyperparameters()
 
@@ -61,6 +68,31 @@ class TrashModel(LightningModule):
     def unfreeze_baseline_model(self):
         for p in self.baseline_model.parameters():
             p.requires_grad = True
+
+    def freeze_backbone_keep_head(self):
+        # freeze everything
+        for p in self.baseline_model.parameters():
+            p.requires_grad = False
+        # unfreeze classifier head
+        for p in self.baseline_model.get_classifier().parameters():
+            p.requires_grad = True
+        
+    def set_bn_eval(self):
+        for m in self.baseline_model.modules():
+            if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d)):
+                m.eval()
+                m.track_running_stats = False
+
+    def on_fit_start(self):
+        if self.hparams.freeze_backbone:
+            print(self.hparams.freeze_backbone)
+            self.freeze_backbone_keep_head()
+
+    def on_train_epoch_start(self):
+        if self.hparams.freeze_backbone:
+            print(self.hparams.freeze_backbone)
+            self.set_bn_eval()
+
 
 
 if __name__ == "__main__":
