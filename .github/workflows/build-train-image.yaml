@@ -1,0 +1,105 @@
+# Autmatic train workflow
+name: Build and Push Training Image
+
+on:
+  ### Uncomment for test manually
+  # push:
+  #   branches:
+  #     - main
+  #     - jeppe/automatic-training-image-build # Temporary branch for testing
+  #   paths:
+  #     # Trigger when training-related files change
+  #     - 'src/trashsorting/train.py'
+  #     - 'src/trashsorting/model.py'
+  #     - 'src/trashsorting/data.py'
+  #     - 'dockerfiles/train.dockerfile'
+  #     - 'scripts/train_gcp.sh'
+  #     - 'params.yaml'
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      tag:
+        description: 'Additional tag for the image (optional)'
+        required: false
+        default: ''
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-west1
+  REPOSITORY: trashclassification
+  IMAGE_NAME: train
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write  # Required for Workload Identity Federation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate image tags
+        id: meta
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+          TAGS="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:latest"
+          TAGS="$TAGS,${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:$SHORT_SHA"
+          TAGS="$TAGS,${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:$TIMESTAMP"
+
+          # Add custom tag if provided via workflow_dispatch
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAGS="$TAGS,${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag }}"
+          fi
+
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./dockerfiles/train.dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false  # Avoid multi-platform manifest issues
+
+      - name: Output image details
+        run: |
+          echo "Training image built and pushed successfully!"
+          echo "Image tags:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' | sed 's/^/  - /'
+          echo ""
+          echo "To deploy to Vertex AI, run:"
+          echo "invoke gcp-train-vertex"
+
+      - name: Create deployment summary
+        run: |
+          echo "## Training Image Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Image Tags" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

@@ -110,7 +110,6 @@ uv run invoke gcp-build-api
 
 # Push to Artifact Registry
 uv run invoke gcp-push-api
-
 ```
 2. Deploy to Cloud Run
 ```
