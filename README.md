@@ -60,6 +60,39 @@ gcloud auth configure-docker europe-west1-docker.pkg.dev
 ```
 4. Create `.env` file with environment variables (see `.env.example`)
 
+### Workflows for building training and API images
+
+Both training and API images are automatically built and pushed to the GCP registry when changes are made to the main branch. They can also be triggered manually or through a release by running the following (or activating in GitHub Actions):
+
+**Manual trigger of training image:**
+```bash
+gh workflow run build-train-image.yaml
+gh workflow run build-train-image.yaml -f tag=custom-tag
+```
+
+**Manual trigger of API image:**
+```bash
+# Build only
+gh workflow run build-api-image.yaml
+
+# Build and deploy
+gh workflow run build-api-image.yaml -f deploy=true
+
+# Build with custom tag
+gh workflow run build-api-image.yaml -f tag=staging -f deploy=false
+```
+
+**Creating a release:**
+```bash
+# Create a release (triggers automatically)
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+gh release create v1.0.0 --title "v1.0.0" --notes "Release notes"
+
+# Or trigger manually
+gh workflow run build-on-release.yaml -f version=v1.0.0
+```
+
 ### Deploy to Google Cloud Run
 5. Build and push docker images
 ```
