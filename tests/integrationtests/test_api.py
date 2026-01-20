@@ -5,7 +5,6 @@ using FastAPI's TestClient and httpx.
 """
 
 import io
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest

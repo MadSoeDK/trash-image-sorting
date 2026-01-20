@@ -16,10 +16,7 @@ Environment variables:
 """
 
 import io
-import os
-from pathlib import Path
 from random import choice
-
 from locust import HttpUser, task, between, events
 from PIL import Image
 
