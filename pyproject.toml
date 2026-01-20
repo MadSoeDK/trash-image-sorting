@@ -52,6 +52,8 @@ dev = [
     "scikit-learn>=1.8.0",
     "seaborn>=0.13.2",
     "loguru>=0.7.3",
+    "httpx>=0.28.1",
+    "locust>=2.43.1",
 ]
 
 
