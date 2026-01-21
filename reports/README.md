@@ -147,7 +147,21 @@ s215805, s260399, s214964, s234855
 >
 > Answer:
 
---- question 3 fill here ---
+We used the third‑party framework timm (PyTorch Image Models),
+which is a collection of many pretrained image models, as a
+core component of our project. We used timm.create_model()
+to load a pretrained convolutional network (in our case, a
+MobileNetV3 variant "mobilenetv3_small_100"), which served
+as the backbone of our image‑classification pipeline. Using
+a pretrained model allowed us to leverage modern architectures
+and transfer learning with minimal effort. With timm we can
+quickly load a model, fine tune it on our own data and use it
+to make predictions.
+Without timm, we would have had to manually implement the
+entire model or import less‑well‑tested model definitions. Timm
+significantly reduced boilerplate code and allowed us to focus
+more on the training pipeline and evaluation rather than
+low‑level model engineering.
 
 ## Coding environment
 
@@ -298,7 +312,18 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 12 fill here ---
+Experiments were configured using Hydra
+with a central params.yaml file to manage
+hyperparameters and other relevant variables,
+effectively replacing the need for a traditional
+argparser. Additionally, we used Invoke as a
+task runner to standardize preprocessing,
+training, and evaluation, as well as interactions
+with GCP services and Docker‑based workflows
+to ensure reproducibility.
+
+To train the model: ``uv run invoke train``
+To evaluate the model: ``uv run invoke evaluate`` etc.
 
 ### Question 13
 
@@ -313,7 +338,21 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 13 fill here ---
+To ensure reproducibility of all experiments and
+avoid loss of information during training, we
+rely on PyTorch Lightning’s built‑in logging and
+checkpointing mechanisms. All important metrics
+such as loss, accuracy, and test performance are
+logged automatically, and when enabled, Weights
+& Biases further logs potential hyperparameter sweeps
+and configuration details.
+We also use a ModelCheckpoint callback that saves
+the best-performing model based on validation loss,
+ensuring the exact state of the optimal model is
+always preserved. Finally, PyTorch Lightning’s
+self.save_hyperparameters() stores all model parameters
+alongside the checkpoint, making each saved model fully
+reproducible.
 
 ### Question 14
 
