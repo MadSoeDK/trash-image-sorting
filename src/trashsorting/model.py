@@ -61,14 +61,6 @@ class TrashModel(LightningModule):
         params = filter(lambda p: p.requires_grad, self.baseline_model.parameters())
         return torch.optim.Adam(params, lr=self.lr)
 
-    def freeze_baseline_model(self):
-        for p in self.baseline_model.parameters():
-            p.requires_grad = False
-
-    def unfreeze_baseline_model(self):
-        for p in self.baseline_model.parameters():
-            p.requires_grad = True
-
     def freeze_backbone_keep_head(self):
         # freeze everything
         for p in self.baseline_model.parameters():
