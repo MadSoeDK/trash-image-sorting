@@ -35,7 +35,6 @@ dependencies = [
     "uvicorn==0.34.0",
     "wandb>=0.23.1",
     "dvc-gs>=3.0.2",
-    "markdown>=3.10",
 ]
 
 [dependency-groups]
@@ -52,6 +51,7 @@ dev = [
     "scikit-learn>=1.8.0",
     "seaborn>=0.13.2",
     "loguru>=0.7.3",
+    "markdown>=3.10",
 ]
 
 
