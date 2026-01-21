@@ -1,16 +1,16 @@
 name: Build and Push API Image
 
 on:
-  # push: ## Uncomment for test manually
-  #   branches:
-  #     - main
-  #   paths:
-  #     # Trigger when API-related files change
-  #     - 'src/trashsorting/api.py'
-  #     - 'src/trashsorting/model.py'
-  #     - 'src/trashsorting/predict.py'
-  #     - 'src/trashsorting/static/**'
-  #     - 'dockerfiles/api.dockerfile'
+  push:
+    branches:
+      - main
+    paths:
+      # Trigger when API-related files change
+      - 'src/trashsorting/api.py'
+      - 'src/trashsorting/model.py'
+      - 'src/trashsorting/predict.py'
+      - 'src/trashsorting/static/**'
+      - 'dockerfiles/api.dockerfile'
   workflow_dispatch:  # Allow manual triggering
     inputs:
       tag:
