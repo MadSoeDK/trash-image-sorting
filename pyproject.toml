@@ -55,6 +55,7 @@ dev = [
     "seaborn>=0.13.2",
     "loguru>=0.7.3",
     "markdown>=3.10",
+    "pytest-cov>=6.3.0",
 ]
 
 
