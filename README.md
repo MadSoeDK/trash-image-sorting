@@ -94,6 +94,52 @@ gh release create v1.0.0 --title "v1.0.0" --notes "Release notes"
 gh workflow run build-on-release.yaml -f version=v1.0.0
 ```
 
+## Testing
+
+The project includes comprehensive test coverage for unit tests, API integration tests, and load/performance tests.
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run unit tests only
+pytest tests/unittests/ -v
+
+# Run API integration tests
+pytest tests/integrationtests/ -v
+
+# Run with coverage
+coverage run -m pytest tests/
+coverage report -m
+```
+
+### API Load Testing
+
+Load tests measure API performance under different loads using Locust:
+
+```bash
+# 1. Start the API server
+uvicorn trashsorting.api:app --host 0.0.0.0 --port 8000
+
+# 2. Run load tests (in a new terminal)
+./run_load_tests.sh
+
+# Custom configuration
+./run_load_tests.sh --users 100 --spawn-rate 10 --time 5m
+
+# Run with web UI for real-time monitoring
+./run_load_tests.sh --web
+```
+
+### Continuous Integration
+
+All tests run automatically in GitHub Actions on every push and pull request:
+- **Unit Tests** - Test individual functions and classes
+- **Integration Tests** - Test API endpoints and their integration
+- **Load Tests** - Run on main branch to verify performance
+
 ## Deployment
 Complete installation in [setup section](#Setup-bfore-training-ad-deployment) first to make sure you have the required dependencies.
 
