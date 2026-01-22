@@ -58,6 +58,7 @@ dev = [
     "locust>=2.43.1",
     "psutil>=6.1.1",
     "markdown>=3.10",
+    "pytest-cov>=6.3.0",
 ]
 
 
