@@ -276,8 +276,7 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 10 fill here ---
-
+We used DVC extensively for managing data in our project. We configured DVC to use Google Cloud Storage (gs://trash_classification_data/) as our remote storage backend with version-aware tracking enabled. We tracked both raw data (data/raw.dvc) and preprocessed data (data/processed/*.pt.dvc files). DVC improved our project by allowing team members to easily pull the exact same dataset without committing large files to Git. We also integrated DVC into our CI/CD pipeline - we have a GitHub Actions workflow (cml_data.yaml) that automatically triggers when data files change and generates data quality reports using CML. This ensures that any changes to the dataset are reviewed and validated. Additionally, DVC pipelines (defined in dvc.yaml) helped us create reproducible data preprocessing and training workflows, tracking dependencies between data, code, and model outputs. Overall, DVC made data management much more structured and collaborative.
 ### Question 11
 
 > **Discuss you continuous integration setup. What kind of continuous integration are you running (unittesting,**
@@ -293,7 +292,7 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 11 fill here ---
+We have organized our continuous integration into multiple specialized workflows. We have separate workflows for unit testing (tests.yaml), API integration testing (api-tests.yaml), linting (linting.yaml), data quality checks (cml_data.yaml), and Docker image building (build-api-image.yaml, build-train-image.yaml). The unit test workflow runs on every push and pull request to main, executing pytest on the unittests directory with coverage reporting. The API integration test workflow similarly tests the API endpoints. The linting workflow uses Ruff for both code checking and formatting to ensure code quality standards. All test workflows use pip caching to speed up dependency installation. We test with Python 3.12 on ubuntu-latest runners. While we don't test multiple OS or Python versions, we do use Docker containers which provide consistent environments across different platforms. The CML workflow automatically triggers when data files (.dvc) change and generates data quality reports that get posted as PR comments. The Docker build workflows use GitHub Actions cache for Docker layers (cache-from/cache-to: type=gha) to speed up builds and automatically push images to Google Artifact Registry when API or training code changes. An example workflow: [tests.yaml](https://github.com/MadSoeDK/trash-image-sorting/blob/main/.github/workflows/tests.yaml)
 
 ## Running code and tracking experiments
 
@@ -525,7 +524,17 @@ We deployed the API both locally and to the cloud. We started by testing locally
 >
 > Answer:
 
---- question 25 fill here ---
+We have performed both unit testing and load testing. For unit testing, we used pytest with FastAPI's TestClient to create integration tests covering all endpoints, error handling for invalid files, corrupted images, and edge cases. For load testing, we used Locust against our deployed API at https://trashsorting-api-fafnprv65a-ew.a.run.app/. Results from 3,027 requests over ~2 minutes:
+
+| Endpoint | Requests | Failures | Avg Response Time | Requests/sec |
+|----------|----------|----------|-------------------|--------------|
+| POST /api/predict | 2,641 | 0 | 1,060 ms | 22.5 |
+| GET /api/health | 186 | 0 | 1,063 ms | 1.6 |
+| GET /api/model/info | 102 | 0 | 1,080 ms | 0.9 |
+| **Total** | **3,027** | **0** | **1,061 ms** | **25.8** |
+
+The API achieved 100% success rate with consistent response times across all endpoints. No crashes or performance degradation occurred during the test, demonstrating the deployed application is stable and performs well under load.
+
 
 ### Question 26
 
@@ -625,7 +634,14 @@ We implemented a simple web frontend for our API using vanilla HTML, CSS, and Ja
 > *All members contributed to code by...*
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
+- Student s215805 was...
+- Student s260399 was...
+- Student s214964 managed DVC for data versioning and remote storage (Google Cloud Storage), wrote unit tests for data loading/preprocessing, configured integrations and load testing, as well as setting up various CI workflows.
+- Student s234855 was...
 
+All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development. 
+
+We have used AI to some extent to help debug our code and generate documentation for our API. Additionally, we used AI to assist in writing boilerplate code and speeding up the development of certain functions. All code (AI or human-written) has been reviewed by other team member(s) to ensure quality and correctness before being merged into the main branch. 
 **S215805**: Project setup with cookiecutter. Dataloading from HuggingFace. Load relevant model from timm. Initial train, evaluate, predict scripts. PyTorch lightening. API backend endpoint and frontend HTML site. Some intitial GCP setup/deploy as well.
 
 
