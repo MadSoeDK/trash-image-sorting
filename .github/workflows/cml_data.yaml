@@ -1,0 +1,63 @@
+name: CML - Data Quality Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.dvc'
+      - '.dvc/**'
+      - 'data/**'
+
+jobs:
+  dataset_statistics:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --all-extras
+          uv pip list
+
+      - name: Configure GCP credentials
+        if: github.event_name == 'pull_request'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Pull data with DVC
+        run: |
+          uv run dvc pull data/processed/trashnet.pt --no-run-cache
+
+      - name: Generate data statistics report
+        run: |
+          uv run python -m trashsorting.dataset_statistics > data_statistics.md
+          echo '![](./trash_sample_images.png "Sample Images")' >> data_statistics.md
+          echo '![](./train_label_distribution.png "Train Label Distribution")' >> data_statistics.md
+          echo '![](./val_label_distribution.png "Validation Label Distribution")' >> data_statistics.md
+          echo '![](./test_label_distribution.png "Test Label Distribution")' >> data_statistics.md
+
+      - name: Setup CML
+        uses: iterative/setup-cml@v3
+
+      - name: Create CML comment on PR
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cml comment create data_statistics.md --watermark-title="Dataset Quality Report"
+
