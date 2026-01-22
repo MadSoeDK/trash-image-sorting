@@ -119,7 +119,21 @@ will check the repositories and the code to verify your answers.</p>
 <em>package to do ... and ... in our project</em>.</p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 3 fill here ---</p>
+<p>We used the third‑party framework timm (PyTorch Image Models),
+which is a collection of many pretrained image models, as a
+core component of our project. We used timm.create_model()
+to load a pretrained convolutional network (in our case, a
+MobileNetV3 variant "mobilenetv3_small_100"), which served
+as the backbone of our image‑classification pipeline. Using
+a pretrained model allowed us to leverage modern architectures
+and transfer learning with minimal effort. With timm we can
+quickly load a model, fine tune it on our own data and use it
+to make predictions.
+Without timm, we would have had to manually implement the
+entire model or import less‑well‑tested model definitions. Timm
+significantly reduced boilerplate code and allowed us to focus
+more on the training pipeline and evaluation rather than
+low‑level model engineering.</p>
 <h2>Coding environment</h2>
 <blockquote>
 <p>In the following section we are interested in learning more about you local development environment. This includes
@@ -135,7 +149,7 @@ how you managed dependencies, the structure of your code and how you managed cod
 <em>complete copy of our development environment, one would have to run the following commands</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 4 fill here ---</p>
+<p>We used <code>uv</code> for managing our dependencies, which are all listed in the <code>pyproject.toml</code> file. This includes both production dependencies like PyTorch, FastAPI, and Hydra, as well as development tools like pytest and ruff in a separate dev group. To set up an identical environment, a new team member would need to install <code>uv</code> first, then run <code>uv sync</code> in the project root. This reads the lock file and installs all dependencies with exact versions. We also provide a devcontainer configuration that sets up the complete development environment automatically in VS Code. Lastly, for data, we use DVC to download the datasets from a Google Cloud Platform(GCP) bucket.</p>
 <h3>Question 5</h3>
 <blockquote>
 <p><strong>We expect that you initialized your project using the cookiecutter template. Explain the overall structure of your</strong>
@@ -147,7 +161,7 @@ how you managed dependencies, the structure of your code and how you managed cod
 <em>experiments.</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 5 fill here ---</p>
+<p>We started with the cookiecutter MLOps template and filled out the core folders like <code>src/trashsorting</code>, <code>configs</code>, <code>tests</code>, and <code>data</code>. The main module includes <code>data.py</code> for loading our trash dataset, <code>model.py</code> for defining the model architecture, <code>train.py</code> for training, and <code>api.py</code> for the FastAPI endpoints. The root <code>model</code> contains the output from the training phase with model weights etc. We used the <code>dockerfiles</code> folder with separate dockerfiles for training and API deployment. We also created a <code>static</code> folder inside the core module for frontend files and used the <code>notebooks</code> folder for exploratory analysis and demos. We removed the <code>visualize.py</code> file since we ended up doing most visualization in notebooks instead. Overall we followed the template structure closely.</p>
 <h3>Question 6</h3>
 <blockquote>
 <p><strong>Did you implement any rules for code quality and format? What about typing and documentation? Additionally,</strong>
@@ -158,7 +172,7 @@ how you managed dependencies, the structure of your code and how you managed cod
 <em>concepts are important in larger projects because ... . For example, typing ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 6 fill here ---</p>
+<p>We used Ruff for both linting and formatting. We added type hints throughout our code using Python's typing module. Pre-commit hooks helped us catch issues before they get committed, things like trailing whitespace, broken YAML files, and large files. These practices matter a lot in team projects because they keep the codebase consistent and readable. Type hints especially help catch bugs early and make it easier to understand what functions expect as inputs. When multiple people are working on the same code, having automated formatting means you don't waste time arguing about style or reviewing formatting changes.</p>
 <h2>Version control</h2>
 <blockquote>
 <p>In the following section we are interested in how version control was used in your project during development to
@@ -195,7 +209,7 @@ corporate and increase the quality of your code.</p>
 <em>addition to the main branch. To merge code we ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 9 fill here ---</p>
+<p>We used branches and pull requests throughout the project. Each team member typically worked on their own feature branches with names like <code>mads/frontend-app</code>, <code>vhy/dvc-google-cloud-storage</code>, or <code>data-loading</code> for specific features. When a feature was ready, we'd open a pull request to merge it into main. This let other team members review the code before merging, which helped catch bugs and ensure code quality. We also had some automated checks running on PRs through GitHub Actions. The PR workflow was especially helpful when multiple people were working on different parts of the codebase simultaneously. It helped prevent merge conflicts and made sure everyone knew what changes were being made. We kept branch protection simple. Merges to main required pull requests, but we skipped mandatory reviewer approvals to move faster given the short timeframe. Stricter protections would be needed for larger or open source projects.</p>
 <h3>Question 10</h3>
 <blockquote>
 <p><strong>Did you use DVC for managing data in your project? If yes, then how did it improve your project to have version</strong>
@@ -234,7 +248,17 @@ especially the reproducibility of your experiments.</p>
 <em>We used a simple argparser, that worked in the following way: Python  my_script.py --lr 1e-3 --batch_size 25</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 12 fill here ---</p>
+<p>Experiments were configured using Hydra
+with a central params.yaml file to manage
+hyperparameters and other relevant variables,
+effectively replacing the need for a traditional
+argparser. Additionally, we used Invoke as a
+task runner to standardize preprocessing,
+training, and evaluation, as well as interactions
+with GCP services and Docker‑based workflows
+to ensure reproducibility. </p>
+<p>To train the model: <code>uv run invoke train</code>
+To evaluate the model: <code>uv run invoke evaluate</code> etc.</p>
 <h3>Question 13</h3>
 <blockquote>
 <p><strong>Reproducibility of experiments are important. Related to the last question, how did you secure that no information</strong>
@@ -245,7 +269,21 @@ especially the reproducibility of your experiments.</p>
 <em>one would have to do ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 13 fill here ---</p>
+<p>To ensure reproducibility of all experiments and
+avoid loss of information during training, we
+rely on PyTorch Lightning’s built‑in logging and
+checkpointing mechanisms. All important metrics
+such as loss, accuracy, and test performance are
+logged automatically, and when enabled, Weights
+&amp; Biases further logs potential hyperparameter sweeps
+and configuration details.
+We also use a ModelCheckpoint callback that saves
+the best-performing model based on validation loss,
+ensuring the exact state of the optimal model is
+always preserved. Finally, PyTorch Lightning’s
+self.save_hyperparameters() stores all model parameters
+alongside the checkpoint, making each saved model fully
+reproducible.</p>
 <h3>Question 14</h3>
 <blockquote>
 <p><strong>Upload 1 to 3 screenshots that show the experiments that you have done in W&amp;B (or another experiment tracking</strong>
@@ -269,7 +307,7 @@ especially the reproducibility of your experiments.</p>
 <em>training docker image: <code>docker run trainer:latest lr=1e-3 batch_size=64</code>. Link to docker file: <weblink></em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 15 fill here ---</p>
+<p>We created two main Docker images: one for training and one for API deployment. The training image uses <code>uv</code> for dependency management and mounts volumes for data and models. You can run it with <code>docker run --rm -v ./data:/app/data -v ./models:/app/models train_1:latest</code>. We also set up <code>docker-compose.yaml</code> for easier orchestration. The API dockerfile uses a multi-stage build to keep the production image small. The builder stage installs dependencies, then the runtime stage only copies what's needed. To run the API: <code>docker run -p 8080:8080 api:latest</code>. Both dockerfiles are in the <code>dockerfiles/</code> folder. The API image was deployed to Google Cloud Run for production. Link to train dockerfile: <a href="https://github.com/MadSoeDK/trash-image-sorting/blob/main/dockerfiles/train.dockerfile">train.dockerfile</a></p>
 <h3>Question 16</h3>
 <blockquote>
 <p><strong>When running into bugs while trying to run your experiments, how did you perform debugging? Additionally, did you</strong>
@@ -348,7 +386,7 @@ especially the reproducibility of your experiments.</p>
 <em>to the API to make it more ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 23 fill here ---</p>
+<p>We built an API using FastAPI. The main endpoint is <code>/api/predict</code>, which accepts image uploads and returns the predicted trash category with confidence scores for all six classes (cardboard, glass, metal, paper, plastic, trash). We used a lifespan context manager to load the model once at startup rather than on every request, which improves performance. The API includes proper error handling for invalid images and model loading failures. We added CORS middleware to allow frontend access and created additional endpoints like <code>/api/health</code> for monitoring and <code>/api/model/info</code> for getting model details. We also used Pydantic models for request/response validation with schema examples. The API serves a static frontend at the root path, so users can interact with it through a web interface. Everything is documented with OpenAPI/Swagger available at <code>/docs</code>.</p>
 <h3>Question 24</h3>
 <blockquote>
 <p><strong>Did you manage to deploy your API, either in locally or cloud? If not, describe why. If yes, describe how and</strong>
@@ -360,7 +398,7 @@ especially the reproducibility of your experiments.</p>
 <em><code>curl -X POST -F "file=@file.json"&lt;weburl&gt;</code></em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 24 fill here ---</p>
+<p>We deployed the API both locally and to the cloud. We started by testing locally using <code>uvicorn src.trashsorting.api:app --reload</code>, which worked well for development. For production, we deployed to Google Cloud Run, which was a good fit since it handles autoscaling and only charges for actual usage. The deployment process involved building the Docker image using our multi-stage dockerfile, pushing it to Google Artifact Registry, and then deploying it to Cloud Run. The API is live at <a href="https://trashsorting-api-fafnprv65a-ew.a.run.app/">https://trashsorting-api-fafnprv65a-ew.a.run.app/</a>. To invoke the service, you can use: <code>curl -X POST -F "file=@trash_image.jpg" https://trashsorting-api-fafnprv65a-ew.a.run.app/api/predict</code>. The API also has a web frontend at the root URL where users can upload images through their browser.</p>
 <h3>Question 25</h3>
 <blockquote>
 <p><strong>Did you perform any unit testing and load testing of your API? If yes, explain how you did it and what results for</strong>

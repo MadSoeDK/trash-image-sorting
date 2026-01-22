@@ -27,7 +27,7 @@ dependencies = [
     "pillow>=11.0.0",
     "python-multipart>=0.0.6",
     "pyyaml>=6.0.0",
-    "pytorch-lightning>=2.6.0",
+    "pytorch-lightning[extra]>=2.6.0",
     "timm>=1.0.12",
     "torch==2.6.0",
     "torchvision==0.21.0",
@@ -36,6 +36,8 @@ dependencies = [
     "wandb>=0.23.1",
     "dvc-gs>=3.0.2",
     "invoke>=2.2.0",
+    "tensorboard>=2.20.0",
+    "tensorboard-plugin-profile>=2.21.4",
 ]
 
 [dependency-groups]
@@ -54,6 +56,8 @@ dev = [
     "loguru>=0.7.3",
     "httpx>=0.28.1",
     "locust>=2.43.1",
+    "psutil>=6.1.1",
+    "markdown>=3.10",
 ]
 
 
