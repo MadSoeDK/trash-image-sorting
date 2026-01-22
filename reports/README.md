@@ -624,6 +624,8 @@ We implemented a simple web frontend for our API using vanilla HTML, CSS, and Ja
 >
 > Answer:
 
+The diagram below describes the different components of our project. If we start in the lower left corner, we have a local development environment. From there we can always sync our data to our storage in GCP Bucket by running `dvc pull`, making sure that any changes to training data are version controlled. From our local environment we can set configurations, that is, make experiments, which are then registrered in Weights and Biases. As these are implemented as feature branches and pushed to our main branch through pull requests, Github Actions will be triggered and build new training images. These are pushed to the Artifact Registry in GCP. If chosen, the newly trained model will be pushed to production, and it will be deployed through Google Cloud Run. Likewise we can make changes to our API scripts, and when these are pushed to the main branch, the API-container will be updated in our Artifact Registry, and finally be deployed in Google Cloud Run. In all these cases we will finish in the upper right corner, where our end user can access our solution, take a picture of a iece of tash, and get an estimate of which category of recyclable material the object belongs.
+
 ![Overview](figures/overview-2.png)
 
 ### Question 30
@@ -645,6 +647,8 @@ In general Google Cloud Platform (GCP) is complex, and we spent a lot of time in
 When implementing Continuous Integration in GitHub we have faced a range of challenges both related to GitHub Actions and with the integration into GCP. We ensured that our code was continuously tested, built and deployed, which was difficult to get to work in a way, that was suitable for our project.
 
 It has also been a challenge to setup an environment that supports the reproducibility of our experiments. Uv and Docker has made fixed dependencies quite manageable, however both DVC and Weights and  Biases have been difficult setting up in a way, that has been relevant to our project. From this work it has been apparent, that it is important to invest time in planning and documenting experiments.
+
+We could not get the student credits working, and it was not possible to request GPU usage in GCP on a regular free trial. This made it impossible for us to accellerate our training and inference using GPU. Our estimate is, that we would have encountered further challenges getting our model to run on through a cuda environment. Had this been possible, we would have sought to adjust our Docker images to be based upon cuda images, and through this be able to run our solutions on GPU.
 
 
 
@@ -668,10 +672,6 @@ It has also been a challenge to setup an environment that supports the reproduci
 - Student s214964 managed DVC for data versioning and remote storage (Google Cloud Storage), wrote unit tests for data loading/preprocessing, configured integrations and load testing, as well as setting up various CI workflows.
 - Student s234855 was...
 
-All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development. 
+All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development.
 
-We have used AI to some extent to help debug our code and generate documentation for our API. Additionally, we used AI to assist in writing boilerplate code and speeding up the development of certain functions. All code (AI or human-written) has been reviewed by other team member(s) to ensure quality and correctness before being merged into the main branch. 
-
-
-**Use of AI**:
-The use of AI have been up to the individual group member. All group members have to some degree used Copilot/Claude Code to help write code, write unit tests and help with formulating senteces for the report. AI have been used as a tool to improve the quality of the output, not a "do everything for me" kind of prompt. With that said we have also used Pull Requests for our project, so there have always been human review on everything merged into the main branch of this repository.
+We have used AI to some extent to help debug our code and generate documentation for our API. Additionally, we used AI to assist in writing boilerplate code and speeding up the development of certain functions. All code (AI or human-written) has been reviewed by other team member(s) to ensure quality and correctness before being merged into the main branch.
