@@ -280,8 +280,7 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 10 fill here ---
-
+We used DVC extensively for managing data in our project. We configured DVC to use Google Cloud Storage (gs://trash_classification_data/) as our remote storage backend with version-aware tracking enabled. We tracked both raw data (data/raw.dvc) and preprocessed data (data/processed/*.pt.dvc files). DVC improved our project by allowing team members to easily pull the exact same dataset without committing large files to Git. We also integrated DVC into our CI/CD pipeline - we have a GitHub Actions workflow (cml_data.yaml) that automatically triggers when data files change and generates data quality reports using CML. This ensures that any changes to the dataset are reviewed and validated. Additionally, DVC pipelines (defined in dvc.yaml) helped us create reproducible data preprocessing and training workflows, tracking dependencies between data, code, and model outputs. Overall, DVC made data management much more structured and collaborative.
 ### Question 11
 
 > **Discuss you continuous integration setup. What kind of continuous integration are you running (unittesting,**
@@ -297,7 +296,7 @@ We used branches and pull requests throughout the project. Each team member typi
 >
 > Answer:
 
---- question 11 fill here ---
+We have organized our continuous integration into multiple specialized workflows. We have separate workflows for unit testing (tests.yaml), API integration testing (api-tests.yaml), linting (linting.yaml), data quality checks (cml_data.yaml), and Docker image building (build-api-image.yaml, build-train-image.yaml). The unit test workflow runs on every push and pull request to main, executing pytest on the unittests directory with coverage reporting. The API integration test workflow similarly tests the API endpoints. The linting workflow uses Ruff for both code checking and formatting to ensure code quality standards. All test workflows use pip caching to speed up dependency installation. We test with Python 3.12 on ubuntu-latest runners. While we don't test multiple OS or Python versions, we do use Docker containers which provide consistent environments across different platforms. The CML workflow automatically triggers when data files (.dvc) change and generates data quality reports that get posted as PR comments. The Docker build workflows use GitHub Actions cache for Docker layers (cache-from/cache-to: type=gha) to speed up builds and automatically push images to Google Artifact Registry when API or training code changes. An example workflow: [tests.yaml](https://github.com/MadSoeDK/trash-image-sorting/blob/main/.github/workflows/tests.yaml)
 
 ## Running code and tracking experiments
 
@@ -373,7 +372,11 @@ reproducible.
 >
 > Answer:
 
---- question 14 fill here ---
+![wandb Dashboard](figures/wandb-2.png)
+
+We integrated Weights & Biases for experiment tracking during local development and testing. As shown in the screenshot, we tracked metrics such as training loss, validation loss, training accuracy, and validation accuracy across epochs. These metrics are important for understanding model performance and detecting issues like overfitting. Training and validation loss show how well the model is learning the trash classification task, while the accuracy metrics directly measure classification performance on our six-category dataset.
+
+Since this project focused primarily on building a MLOps pipeline rather than model development, training and hyperparameter optimization, we only performed limited local experiments with W&B. We did not conduct hyperparameter sweeps or extensive training runs. The main goal was to establish the infrastructure for experiment tracking, containerization, cloud deployment, CI/CD, and monitoring. Our experiments were mainly to verify the training pipeline worked correctly and to establish baseline metrics. In a production scenario focused on model performance, we would use W&B more extensively for hyperparameter tuning, comparing different model architectures, and tracking longer training runs.
 
 ### Question 15
 
@@ -403,7 +406,8 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 16 fill here ---
+Debugging has been used by all group members, and has varied individually and adjusted to different use cases. During simple investigations on local builds regular print statements have been used as well as the built in 'run and debug' function of VS Code. To further solidify our solutions, we have implemented proper logging mechanisms, making it possible to identify error messages and warnings when running our solutions in the cloud. Last we have made use of type hinting, accommodating and catching possible errors early in the process.
+
 
 ## Working in the cloud
 
@@ -420,7 +424,13 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 17 fill here ---
+In our project work we have made use of the following GCP services:
+
+- Compute Engine: Initially we ran training through virtual machines
+- Vertex AI: We then moved training to AI Vertex for custom jobs, making sure to only use the ressources required for the training session, and not having any unutilized VMs.
+- Artifact Registry: We pushed our training and API images to artifact registry after building through Github Actions
+- Cloud storage: We stored our data and version controlled it through DVC
+- Cloud Run: We have deployed our API through the Cloud Run solution making the solution automatically scalable.
 
 ### Question 18
 
@@ -435,7 +445,12 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 18 fill here ---
+We briefly used the Compute engine for test running our containers, where we made use of the basic N2 instance with 2vCPUs and 8GB of memory. However we have mostly made use of the Vertex AI Service for running training jobs, as this comes with a range of benefits:
+
+- Configurability: It is easy to make custom configurations on the fly, if a run needed specific ressources. Furthermore ressources are provisioned to the Custom Job hrough Vertex AI, meaning less ressources go unused.
+- Less overhead: No need to start, stop and monitor VM instances, as the service is stopped when the Custom Job is finished.
+- Scalable: In case of newly introuced compute demands, we would be able to easily scale to these new requirements.
+
 
 ### Question 19
 
@@ -444,7 +459,8 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 19 fill here ---
+![bucket1](figures/bucket1.png)
+![bucket2](figures/bucket2.png)
 
 ### Question 20
 
@@ -453,7 +469,9 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 20 fill here ---
+![build1](figures/build1.png)
+![build2](figures/build2.png)
+
 
 ### Question 21
 
@@ -462,7 +480,10 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 21 fill here ---
+In our project we built our images through GitHub Actions and pushed to our GCP Artifactory. Here is a screenshot of our Github Actions:
+
+![GHaction](figures/GHaction.png)
+
 
 ### Question 22
 
@@ -477,7 +498,10 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 22 fill here ---
+Yes, we managed to build a training pipeline and pack it into a Docker Image, which when run, would go through the predefined training process. It was then possible to run this process through Vertex AI, gathering the data from our GCP Bucket, running the training script, and push the resulting model to the GCP Bucket.
+
+By using Vertex AI, which is a managed environment for training machine learning models, we made sure to only use the necessary ressources for the job. This secured that we did not waste unneccesary credits, and we did not have to manually shut down Virtual Machines. Thus we found Vertex AI to be a more suitable solution for our use case compared to Cloud Engine.
+
 
 ## Deployment
 
@@ -525,7 +549,17 @@ We deployed the API both locally and to the cloud. We started by testing locally
 >
 > Answer:
 
---- question 25 fill here ---
+We have performed both unit testing and load testing. For unit testing, we used pytest with FastAPI's TestClient to create integration tests covering all endpoints, error handling for invalid files, corrupted images, and edge cases. For load testing, we used Locust against our deployed API at https://trashsorting-api-fafnprv65a-ew.a.run.app/. Results from 3,027 requests over ~2 minutes:
+
+| Endpoint | Requests | Failures | Avg Response Time | Requests/sec |
+|----------|----------|----------|-------------------|--------------|
+| POST /api/predict | 2,641 | 0 | 1,060 ms | 22.5 |
+| GET /api/health | 186 | 0 | 1,063 ms | 1.6 |
+| GET /api/model/info | 102 | 0 | 1,080 ms | 0.9 |
+| **Total** | **3,027** | **0** | **1,061 ms** | **25.8** |
+
+The API achieved 100% success rate with consistent response times across all endpoints. No crashes or performance degradation occurred during the test, demonstrating the deployed application is stable and performs well under load.
+
 
 ### Question 26
 
@@ -540,7 +574,7 @@ We deployed the API both locally and to the cloud. We started by testing locally
 >
 > Answer:
 
---- question 26 fill here ---
+We did not have time implement custom monitoring in our application, but we relied on Google Cloud's built-in monitoring dashboard for our deployed Cloud Run service. The GCP dashboard automatically tracks metrics like request count, request latency, error rates, and container resource usage (CPU and memory). This gives us basic visibility into how the API is performing and whether it's experiencing issues. We can see if requests are failing, if response times are slow, or if the service is using excessive resources. However, we did not add application-level metrics like prediction confidence distributions, class prediction frequencies, or data drift detection. For better longevity, we would want to implement custom monitoring that tracks model-specific metrics like average prediction confidence over time, the distribution of predicted classes, and potentially data drift by comparing input image characteristics to the training data distribution. These metrics would help detect when the model performance might be degrading or when retraining is needed.
 
 ## Overall discussion of project
 
@@ -559,7 +593,9 @@ We deployed the API both locally and to the cloud. We started by testing locally
 >
 > Answer:
 
---- question 27 fill here ---
+![Gcloud Spending across services](figures/gcloud-spending.png)
+
+We spent only $0.22 in total across the project. As shown in the figure above, the costs were distributed across several GCP services including Cloud Storage for our data bucket, Cloud Run for API deployment, Artifact Registry for Docker images, and Cloud Logging. We didn't run many epochs for the training jobs in the cloud. Also we set the CLoud Run service option to spin-down usage when no users were present to avoid it running continuously. Cloud Run's pay-per-use model was particularly cost-effective since we only pay when the API receives requests. Working in the cloud was a positive experience overall. The main benefits were easy deployment, automatic scaling, and not having to manage infrastructure. The GCP free tier and credits were generous enough for a project of this scope. The biggest learning curve was understanding IAM permissions and configuring services correctly, but once set up, everything worked smoothly. For production workloads with higher traffic or extensive training, costs would obviously scale up significantly.
 
 ### Question 28
 
@@ -575,7 +611,7 @@ We deployed the API both locally and to the cloud. We started by testing locally
 >
 > Answer:
 
---- question 28 fill here ---
+We implemented a simple web frontend for our API using vanilla HTML, CSS, and JavaScript. The frontend provides a user-friendly interface where users can upload trash images and see the classification results with confidence scores for all six categories. It's served directly from the FastAPI application at the root path and deployed alongside the API on Cloud Run. This makes the model accessible to non-technical users who want to test it without using curl or API tools.
 
 ### Question 29
 
@@ -592,7 +628,7 @@ We deployed the API both locally and to the cloud. We started by testing locally
 >
 > Answer:
 
---- question 29 fill here ---
+![Overview](figures/overview-2.png)
 
 ### Question 30
 
@@ -606,7 +642,15 @@ We deployed the API both locally and to the cloud. We started by testing locally
 >
 > Answer:
 
---- question 30 fill here ---
+During the course we have been introduced to a long range of tools and technologies, which we have sought to implement in our project, as to make a realistic case for a sustainable deployment of a machine learning model. In our work we have of course had difficulties with the individual technologies, but in general the most complex part has been to manage the integration of these different solutions through the Cloud. Making these solutions 'talk' to eachother in GCP and for example managing to get DVC to work inside the Cloud for our project has been a challenge. Also getting data loaded from the Cloud bucket for training and so on.
+
+In general Google Cloud Platform (GCP) is complex, and we spent a lot of time investigating which services were relevant for our project. Furthermore each new service within GCP demands a set of configurations, which we had to investigate through the available documentation, in order to get our solutions up and running. In particular services that had to communicate internally in GCP, for example loading data from the Bucket when training, proved challenging.
+
+When implementing Continuous Integration in GitHub we have faced a range of challenges both related to GitHub Actions and with the integration into GCP. We ensured that our code was continuously tested, built and deployed, which was difficult to get to work in a way, that was suitable for our project.
+
+It has also been a challenge to setup an environment that supports the reproducibility of our experiments. Uv and Docker has made fixed dependencies quite manageable, however both DVC and Weights and  Biases have been difficult setting up in a way, that has been relevant to our project. From this work it has been apparent, that it is important to invest time in planning and documenting experiments.
+
+
 
 ### Question 31
 
@@ -623,5 +667,15 @@ We deployed the API both locally and to the cloud. We started by testing locally
 > *All members contributed to code by...*
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
+- Student s215805 Project setup with cookiecutter. Dataloading from HuggingFace. Load relevant model from timm. Initial train, evaluate, predict scripts. PyTorch lightening. API backend endpoint and frontend HTML site. Some intitial GCP setup/deploy as well.
+- Student s260399 was in charge of developing the docker containers for training and deploying our solution. This included managing integrations concerning storage of data, models and deployment in the cloud.
+- Student s214964 managed DVC for data versioning and remote storage (Google Cloud Storage), wrote unit tests for data loading/preprocessing, configured integrations and load testing, as well as setting up various CI workflows.
+- Student s234855 was in charge of profiling ``train.py``, analyzing the results, and implementating changes to improve execution time. s234855 also developed the unit tests for the ``model.py``.
 
-Student s234855 was in charge of profiling ``train.py``, analyzing the results, and implementating changes to improve execution time. s234855 also developed the unit tests for the ``model.py``.
+All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development. 
+
+We have used AI to some extent to help debug our code and generate documentation for our API. Additionally, we used AI to assist in writing boilerplate code (scut work) and speeding up the development of certain functions. All code (AI or human-written) has been reviewed by other team member(s) to ensure quality and correctness before being merged into the main branch. 
+
+
+**Use of AI**:
+The use of AI have been up to the individual group member. All group members have to some degree used Copilot/Claude Code to help write code, write unit tests and help with formulating senteces for the report. AI have been used as a tool to improve the quality of the output, not a "do everything for me" kind of prompt. With that said we have also used Pull Requests for our project, so there have always been human review on everything merged into the main branch of this repository.
