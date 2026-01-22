@@ -402,7 +402,8 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 16 fill here ---
+Debugging has been used by all group members, and has varied individually and adjusted to different use cases. During simple investigations on local builds regular print statements have been used as well as the built in 'run and debug' function of VS Code. To further solidify our solutions, we have implemented proper logging mechanisms, making it possible to identify error messages and warnings when running our solutions in the cloud. Last we have made use of type hinting, accommodating and catching possible errors early in the process.
+
 
 ## Working in the cloud
 
@@ -419,7 +420,13 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 17 fill here ---
+In our project work we have made use of the following GCP services:
+
+- Compute Engine: Initially we ran training through virtual machines
+- Vertex AI: We then moved training to AI Vertex for custom jobs, making sure to only use the ressources required for the training session, and not having any unutilized VMs.
+- Artifact Registry: We pushed our training and API images to artifact registry after building through Github Actions
+- Cloud storage: We stored our data and version controlled it through DVC
+- Cloud Run: We have deployed our API through the Cloud Run solution making the solution automatically scalable.
 
 ### Question 18
 
@@ -434,7 +441,12 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 18 fill here ---
+We briefly used the Compute engine for test running our containers, where we made use of the basic N2 instance with 2vCPUs and 8GB of memory. However we have mostly made use of the Vertex AI Service for running training jobs, as this comes with a range of benefits:
+
+- Configurability: It is easy to make custom configurations on the fly, if a run needed specific ressources. Furthermore ressources are provisioned to the Custom Job hrough Vertex AI, meaning less ressources go unused.
+- Less overhead: No need to start, stop and monitor VM instances, as the service is stopped when the Custom Job is finished.
+- Scalable: In case of newly introuced compute demands, we would be able to easily scale to these new requirements.
+
 
 ### Question 19
 
@@ -443,7 +455,8 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 19 fill here ---
+![bucket1](figures/bucket1.png)
+![bucket2](figures/bucket2.png)
 
 ### Question 20
 
@@ -452,7 +465,9 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 20 fill here ---
+![build1](figures/build1.png)
+![build2](figures/build2.png)
+
 
 ### Question 21
 
@@ -461,7 +476,10 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 21 fill here ---
+In our project we built our images through GitHub Actions and pushed to our GCP Artifactory. Here is a screenshot of our Github Actions:
+
+![GHaction](figures/GHaction.png)
+
 
 ### Question 22
 
@@ -476,7 +494,10 @@ We created two main Docker images: one for training and one for API deployment. 
 >
 > Answer:
 
---- question 22 fill here ---
+Yes, we managed to build a training pipeline and pack it into a Docker Image, which when run, would go through the predefined training process. It was then possible to run this process through Vertex AI, gathering the data from our GCP Bucket, running the training script, and push the resulting model to the GCP Bucket.
+
+By using Vertex AI, which is a managed environment for training machine learning models, we made sure to only use the necessary ressources for the job. This secured that we did not waste unneccesary credits, and we did not have to manually shut down Virtual Machines. Thus we found Vertex AI to be a more suitable solution for our use case compared to Cloud Engine.
+
 
 ## Deployment
 
@@ -617,7 +638,15 @@ We implemented a simple web frontend for our API using vanilla HTML, CSS, and Ja
 >
 > Answer:
 
---- question 30 fill here ---
+During the course we have been introduced to a long range of tools and technologies, which we have sought to implement in our project, as to make a realistic case for a sustainable deployment of a machine learning model. In our work we have of course had difficulties with the individual technologies, but in general the most complex part has been to manage the integration of these different solutions through the Cloud. Making these solutions 'talk' to eachother in GCP and for example managing to get DVC to work inside the Cloud for our project has been a challenge. Also getting data loaded from the Cloud bucket for training and so on.
+
+In general Google Cloud Platform (GCP) is complex, and we spent a lot of time investigating which services were relevant for our project. Furthermore each new service within GCP demands a set of configurations, which we had to investigate through the available documentation, in order to get our solutions up and running. In particular services that had to communicate internally in GCP, for example loading data from the Bucket when training, proved challenging.
+
+When implementing Continuous Integration in GitHub we have faced a range of challenges both related to GitHub Actions and with the integration into GCP. We ensured that our code was continuously tested, built and deployed, which was difficult to get to work in a way, that was suitable for our project.
+
+It has also been a challenge to setup an environment that supports the reproducibility of our experiments. Uv and Docker has made fixed dependencies quite manageable, however both DVC and Weights and  Biases have been difficult setting up in a way, that has been relevant to our project. From this work it has been apparent, that it is important to invest time in planning and documenting experiments.
+
+
 
 ### Question 31
 
@@ -634,18 +663,14 @@ We implemented a simple web frontend for our API using vanilla HTML, CSS, and Ja
 > *All members contributed to code by...*
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
-- Student s215805 was...
-- Student s260399 was...
+- Student s215805 Project setup with cookiecutter. Dataloading from HuggingFace. Load relevant model from timm. Initial train, evaluate, predict scripts. PyTorch lightening. API backend endpoint and frontend HTML site. Some intitial GCP setup/deploy as well.
+- Student s260399 was in charge of developing the docker containers for training and deploying our solution. This included managing integrations concerning storage of data, models and deployment in the cloud.
 - Student s214964 managed DVC for data versioning and remote storage (Google Cloud Storage), wrote unit tests for data loading/preprocessing, configured integrations and load testing, as well as setting up various CI workflows.
 - Student s234855 was...
 
 All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development. 
 
 We have used AI to some extent to help debug our code and generate documentation for our API. Additionally, we used AI to assist in writing boilerplate code and speeding up the development of certain functions. All code (AI or human-written) has been reviewed by other team member(s) to ensure quality and correctness before being merged into the main branch. 
-**S215805**: Project setup with cookiecutter. Dataloading from HuggingFace. Load relevant model from timm. Initial train, evaluate, predict scripts. PyTorch lightening. API backend endpoint and frontend HTML site. Some intitial GCP setup/deploy as well.
-
-
-
 
 
 **Use of AI**:
