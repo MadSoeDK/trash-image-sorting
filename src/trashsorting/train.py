@@ -46,9 +46,6 @@ def train(
         wandb_logger = WandbLogger(project=os.getenv("WANDB_PROJECT"))
         wandb_logger.experiment.config["batch_size"] = batch_size
 
-
-    
-    
     profiler = PyTorchProfiler(
         schedule=torch.profiler.schedule(
             wait=1,
@@ -65,9 +62,6 @@ def train(
         with_flops=True,
         on_trace_ready=torch.profiler.tensorboard_trace_handler("./tb_logs")
     )
-
-
-
 
     trainer = Trainer(
         max_epochs=max_epochs,

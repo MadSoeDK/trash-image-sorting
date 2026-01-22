@@ -368,7 +368,11 @@ reproducible.
 >
 > Answer:
 
---- question 14 fill here ---
+![wandb Dashboard](figures/wandb-2.png)
+
+We integrated Weights & Biases for experiment tracking during local development and testing. As shown in the screenshot, we tracked metrics such as training loss, validation loss, training accuracy, and validation accuracy across epochs. These metrics are important for understanding model performance and detecting issues like overfitting. Training and validation loss show how well the model is learning the trash classification task, while the accuracy metrics directly measure classification performance on our six-category dataset.
+
+Since this project focused primarily on building a MLOps pipeline rather than model development, training and hyperparameter optimization, we only performed limited local experiments with W&B. We did not conduct hyperparameter sweeps or extensive training runs. The main goal was to establish the infrastructure for experiment tracking, containerization, cloud deployment, CI/CD, and monitoring. Our experiments were mainly to verify the training pipeline worked correctly and to establish baseline metrics. In a production scenario focused on model performance, we would use W&B more extensively for hyperparameter tuning, comparing different model architectures, and tracking longer training runs.
 
 ### Question 15
 
@@ -545,7 +549,7 @@ The API achieved 100% success rate with consistent response times across all end
 >
 > Answer:
 
---- question 26 fill here ---
+We did not have time implement custom monitoring in our application, but we relied on Google Cloud's built-in monitoring dashboard for our deployed Cloud Run service. The GCP dashboard automatically tracks metrics like request count, request latency, error rates, and container resource usage (CPU and memory). This gives us basic visibility into how the API is performing and whether it's experiencing issues. We can see if requests are failing, if response times are slow, or if the service is using excessive resources. However, we did not add application-level metrics like prediction confidence distributions, class prediction frequencies, or data drift detection. For better longevity, we would want to implement custom monitoring that tracks model-specific metrics like average prediction confidence over time, the distribution of predicted classes, and potentially data drift by comparing input image characteristics to the training data distribution. These metrics would help detect when the model performance might be degrading or when retraining is needed.
 
 ## Overall discussion of project
 
@@ -564,7 +568,9 @@ The API achieved 100% success rate with consistent response times across all end
 >
 > Answer:
 
---- question 27 fill here ---
+![Gcloud Spending across services](figures/gcloud-spending.png)
+
+We spent only $0.22 in total across the project. As shown in the figure above, the costs were distributed across several GCP services including Cloud Storage for our data bucket, Cloud Run for API deployment, Artifact Registry for Docker images, and Cloud Logging. We didn't run many epochs for the training jobs in the cloud. Also we set the CLoud Run service option to spin-down usage when no users were present to avoid it running continuously. Cloud Run's pay-per-use model was particularly cost-effective since we only pay when the API receives requests. Working in the cloud was a positive experience overall. The main benefits were easy deployment, automatic scaling, and not having to manage infrastructure. The GCP free tier and credits were generous enough for a project of this scope. The biggest learning curve was understanding IAM permissions and configuring services correctly, but once set up, everything worked smoothly. For production workloads with higher traffic or extensive training, costs would obviously scale up significantly.
 
 ### Question 28
 
@@ -580,7 +586,7 @@ The API achieved 100% success rate with consistent response times across all end
 >
 > Answer:
 
---- question 28 fill here ---
+We implemented a simple web frontend for our API using vanilla HTML, CSS, and JavaScript. The frontend provides a user-friendly interface where users can upload trash images and see the classification results with confidence scores for all six categories. It's served directly from the FastAPI application at the root path and deployed alongside the API on Cloud Run. This makes the model accessible to non-technical users who want to test it without using curl or API tools.
 
 ### Question 29
 
@@ -597,7 +603,7 @@ The API achieved 100% success rate with consistent response times across all end
 >
 > Answer:
 
---- question 29 fill here ---
+![Overview](figures/overview-2.png)
 
 ### Question 30
 
@@ -636,3 +642,11 @@ The API achieved 100% success rate with consistent response times across all end
 All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development. 
 
 We have used AI to some extent to help debug our code and generate documentation for our API. Additionally, we used AI to assist in writing boilerplate code and speeding up the development of certain functions. All code (AI or human-written) has been reviewed by other team member(s) to ensure quality and correctness before being merged into the main branch. 
+**S215805**: Project setup with cookiecutter. Dataloading from HuggingFace. Load relevant model from timm. Initial train, evaluate, predict scripts. PyTorch lightening. API backend endpoint and frontend HTML site. Some intitial GCP setup/deploy as well.
+
+
+
+
+
+**Use of AI**:
+The use of AI have been up to the individual group member. All group members have to some degree used Copilot/Claude Code to help write code, write unit tests and help with formulating senteces for the report. AI have been used as a tool to improve the quality of the output, not a "do everything for me" kind of prompt. With that said we have also used Pull Requests for our project, so there have always been human review on everything merged into the main branch of this repository.
