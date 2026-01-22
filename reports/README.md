@@ -670,7 +670,7 @@ It has also been a challenge to setup an environment that supports the reproduci
 - Student s215805 Project setup with cookiecutter. Dataloading from HuggingFace. Load relevant model from timm. Initial train, evaluate, predict scripts. PyTorch lightening. API backend endpoint and frontend HTML site. Some intitial GCP setup/deploy as well.
 - Student s260399 was in charge of developing the docker containers for training and deploying our solution. This included managing integrations concerning storage of data, models and deployment in the cloud.
 - Student s214964 managed DVC for data versioning and remote storage (Google Cloud Storage), wrote unit tests for data loading/preprocessing, configured integrations and load testing, as well as setting up various CI workflows.
-- Student s234855 was in charge of profiling ``train.py``, analyzing the results, and implementating changes to improve execution time. s234855 also developed the unit tests for the ``model.py``.
+- Student s234855 was in charge of profiling ``train.py``, analyzing the results, and implementating changes to improve execution time. Also developed the unit tests for the ``model.py``.
 
 All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development. 
 
