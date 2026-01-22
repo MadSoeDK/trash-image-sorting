@@ -452,8 +452,8 @@ We briefly used the Compute engine for test running our containers, where we mad
 >
 > Answer:
 
-[bucket1](figures/bucket1.png)
-[bucket2](figures/bucket2.png)
+![bucket1](figures/bucket1.png)
+![bucket2](figures/bucket2.png)
 
 ### Question 20
 
@@ -462,8 +462,8 @@ We briefly used the Compute engine for test running our containers, where we mad
 >
 > Answer:
 
-[build1](figures/build1.png)
-[build2](figures/build2.png)
+![build1](figures/build1.png)
+![build2](figures/build2.png)
 
 
 ### Question 21
@@ -475,7 +475,7 @@ We briefly used the Compute engine for test running our containers, where we mad
 
 In our project we built our images through GitHub Actions and pushed to our GCP Artifactory. Here is a screenshot of our Github Actions:
 
-[GHaction](figures/GHaction.png)
+![GHaction](figures/GHaction.png)
 
 
 ### Question 22
