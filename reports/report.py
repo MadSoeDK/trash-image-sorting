@@ -83,20 +83,20 @@ app = typer.Typer()
 @app.command()
 def html() -> None:
     """Convert README.md to html page."""
-    with Path("README.md").open() as file:
+    with Path("reports/README.md").open() as file:
         text = file.read()
     text = text[43:]  # remove header
 
     html = markdown.markdown(text)
 
-    with open("report.html", "w") as newfile:
+    with open("reports/report.html", "w") as newfile:
         newfile.write(html)
 
 
 @app.command()
 def check() -> None:
     """Check if report satisfies the requirements."""
-    with Path("README.md").open() as file:
+    with Path("reports/README.md").open() as file:
         text = file.read()
 
     # answers in general can be found between "Answer:" and "###" or "##"
