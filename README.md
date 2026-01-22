@@ -38,9 +38,7 @@ The easiest way to get started is using the provided dev container which include
    Press F1 and select "Dev Containers: Reopen in Container"
    Wait for the container to build and dependencies to install (this may take a few minutes the first time)
 
-## Deployment
-Complete installation steps first to make sure you have the required dependencies.
-### Prerequisites
+## Setup before training and deployment
 1. Install Google Cloud SDK (skip if project is opened with `.devcontainer/devcontainer.json` that automatically installs the SDK): [https://docs.cloud.google.com/sdk/docs/install-sdk](https://docs.cloud.google.com/sdk/docs/install-sdk)
 2. Docker should be installed, check by running the command `docker` in your terminal, otherwise install docker on your system.
 3. Authenticate and setup
@@ -54,22 +52,145 @@ gcloud config set project trashclassification-484408
 # Enable required APIs
 gcloud services enable artifactregistry.googleapis.com
 gcloud services enable run.googleapis.com
+gcloud services enable compute.googleapis.com
+gcloud services enable aiplatform.googleapis.com
+gcloud services enable storage.googleapis.com
 
 # Configure Docker authentication
 gcloud auth configure-docker europe-west1-docker.pkg.dev
 ```
 4. Create `.env` file with environment variables (see `.env.example`)
 
-### Deploy to Google Cloud Run
-5. Build and push docker images
+### Workflows for building training and API images
+
+Both training and API images are automatically built and pushed to the GCP registry when changes are made to the main branch. They can also be triggered manually or through a release by running the following (or activating in GitHub Actions):
+
+**Manual trigger of training image:**
+```bash
+gh workflow run build-train-image.yaml
+gh workflow run build-train-image.yaml -f tag=custom-tag
 ```
-# Build the image for GCP
-uv invoke gcp-build-api
+
+**Manual trigger of API image:**
+```bash
+# Build only
+gh workflow run build-api-image.yaml
+
+# Build and deploy
+gh workflow run build-api-image.yaml -f deploy=true
+
+# Build with custom tag
+gh workflow run build-api-image.yaml -f tag=staging -f deploy=false
+```
+
+**Creating a release:**
+```bash
+# Create a release (triggers automatically)
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+gh release create v1.0.0 --title "v1.0.0" --notes "Release notes"
+
+# Or trigger manually
+gh workflow run build-on-release.yaml -f version=v1.0.0
+```
+
+## Testing
+
+The project includes comprehensive test coverage for unit tests, API integration tests, and load/performance tests.
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run unit tests only
+pytest tests/unittests/ -v
+
+# Run API integration tests
+pytest tests/integrationtests/ -v
+
+# Run with coverage
+coverage run -m pytest tests/
+coverage report -m
+```
+
+### API Load Testing
+
+Load tests measure API performance under different loads using Locust:
+
+```bash
+# 1. Start the API server
+uvicorn trashsorting.api:app --host 0.0.0.0 --port 8000
+
+# 2. Run load tests (in a new terminal)
+./run_load_tests.sh
+
+# Custom configuration
+./run_load_tests.sh --users 100 --spawn-rate 10 --time 5m
+
+# Run with web UI for real-time monitoring
+./run_load_tests.sh --web
+```
+
+### Continuous Integration
+
+All tests run automatically in GitHub Actions on every push and pull request:
+- **Unit Tests** - Test individual functions and classes
+- **Integration Tests** - Test API endpoints and their integration
+- **Load Tests** - Run on main branch to verify performance
+
+## Deployment
+Complete installation in [setup section](#Setup-bfore-training-ad-deployment) first to make sure you have the required dependencies.
+
+### Train in Google Cloud Vertex
+1. Build and push docker images
+```bash
+# Build the train-image for GCP
+uv run invoke gcp-build-train
 
 # Push to Artifact Registry
-uv invoke gcp-push-api
+uv run invoke gcp-push-train
 ```
-6. Deploy to Cloud Run
+
+2. Submit training job
+
+```bash
+# Basic training job (CPU only)
+invoke gcp-train-vertex
+
+# Example with custom settings
+invoke gcp-train-vertex \
+    --job-name my-training-job \
+    --bucket-name your-bucket-name \
+    --machine-type n1-standard-4
+
+
+```
+
+To follow custom training job follow instructions in terminal or find JOB_ID through:
+
+```bash
+# List jobs
+gcloud ai custom-jobs list --region=europe-west1
+```
+And insert in the following:
+
+```bash
+# View job details
+gcloud ai custom-jobs describe JOB_ID --region=europe-west1
+```
+
+### Deploy to Google Cloud Run
+1. Build and push docker images
+```
+# Build the API-image for GCP
+uv run invoke gcp-build-api
+
+# Push to Artifact Registry
+uv run invoke gcp-push-api
+```
+2. Deploy to Cloud Run
 ```
 gcloud run deploy trashsorting-api \
   --image europe-west1-docker.pkg.dev/trashclassification-484408/trashclassification/api:latest \
@@ -81,13 +202,13 @@ gcloud run deploy trashsorting-api \
   --timeout 300 \
   --port 8000
 ```
-7. Get Service URL
+3. Get Service URL
 ```
 gcloud run services describe trashsorting-api \
   --region europe-west1 \
   --format 'value(status.url)'
 ```
-8. Test deployed API (Give it a minute or two to boot)
+4. Test deployed API (Give it a minute or two to boot)
 ```
 # Set service URL
 export SERVICE_URL=$(gcloud run services describe trashsorting-api \

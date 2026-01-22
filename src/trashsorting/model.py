@@ -7,7 +7,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TrashModel(LightningModule):
-    def __init__(self, model_name="mobilenetv3_small_100", num_classes: int = 6, lr: float = 1e-3, pretrained: bool = True):
+    def __init__(
+        self, 
+        model_name="mobilenetv3_small_100", 
+        num_classes: int = 6, 
+        lr: float = 1e-3, 
+        pretrained: bool = True,
+        freeze_backbone: bool = True # NOT unused! Collected by self.save_hyperparameters() below.
+    ):
         super().__init__()
         self.save_hyperparameters()
 
@@ -22,6 +29,10 @@ class TrashModel(LightningModule):
             num_classes=num_classes
         )
 
+        # Freeze backbone immediately upon initializing TrashModel (important for unit tests + consistency)
+        if freeze_backbone:
+            self.freeze_backbone_keep_head()
+        
         self.loss_fn = nn.CrossEntropyLoss()
 
     def forward(self, x):
@@ -31,7 +42,8 @@ class TrashModel(LightningModule):
         x, y = batch
         logits = self(x)
         loss = self.loss_fn(logits, y)
-        self.log("train_loss", loss)
+        if self._trainer is not None:
+            self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -39,28 +51,42 @@ class TrashModel(LightningModule):
         logits = self(x)
         loss = self.loss_fn(logits, y)
         acc = (logits.argmax(1) == y).float().mean()
-        self.log("val_loss", loss, prog_bar=True)
-        self.log("val_acc", acc, prog_bar=True)
+        if self._trainer is not None:
+            self.log("val_loss", loss, prog_bar=True)
+            self.log("val_acc", acc, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
         loss = self.loss_fn(logits, y)
         acc = (logits.argmax(1) == y).float().mean()
-        self.log("test_loss", loss, prog_bar=True)
-        self.log("test_acc", acc, prog_bar=True)
+        if self._trainer is not None:
+            self.log("test_loss", loss, prog_bar=True)
+            self.log("test_acc", acc, prog_bar=True)
 
     def configure_optimizers(self):
         params = filter(lambda p: p.requires_grad, self.baseline_model.parameters())
         return torch.optim.Adam(params, lr=self.lr)
 
-    def freeze_baseline_model(self):
+    def freeze_backbone_keep_head(self):
+        # freeze everything
         for p in self.baseline_model.parameters():
             p.requires_grad = False
-
-    def unfreeze_baseline_model(self):
-        for p in self.baseline_model.parameters():
+        # unfreeze classifier head
+        for p in self.baseline_model.get_classifier().parameters():
             p.requires_grad = True
+        
+    def set_bn_eval(self):
+        for m in self.baseline_model.modules():
+            if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d)):
+                m.eval()
+                m.track_running_stats = False
+
+    def on_train_epoch_start(self):
+        if self.hparams.freeze_backbone:
+            print(self.hparams.freeze_backbone)
+            self.set_bn_eval()
+
 
 
 if __name__ == "__main__":

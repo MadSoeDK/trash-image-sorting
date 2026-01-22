@@ -1,4 +1,4 @@
-name: Unit Tests
+name: API Integration Tests
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  test:
+  integration-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -34,11 +34,12 @@ jobs:
           uv sync
           uv pip list
 
-      - name: Run unit tests
+      - name: Run API integration tests
         run: |
-          uv run pytest tests/unittests/ -v --tb=short
+          uv run pytest tests/integrationtests/ -v --tb=short
 
-      - name: Run unit tests with coverage
+      - name: Run integration tests with coverage
         run: |
-          uv run coverage run -m pytest tests/unittests/
+          uv run coverage run -m pytest tests/integrationtests/
           uv run coverage report -m
+
