@@ -620,14 +620,4 @@ We deployed the API both locally and to the cloud. We started by testing locally
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-fewafewubaofewnafioewnifowf ewafw afew afewafewafionewoanf waf ewonfieownaf fewnaiof newio fweanøf wea fewa
- fweafewa fewiagonwa ognwra'g
- wa
- gwreapig ipweroang w rag
- wa grwa
-  g
-  ew
-  gwea g
-  ew ag ioreabnguorwa bg̈́aw
-   wa
-   gew4igioera giroeahgi0wra gwa
+Student s234855 was in charge of profiling ``train.py``, analyzing the results, and implementating changes to improve execution time. s234855 also developed the unit tests for the ``model.py``.
