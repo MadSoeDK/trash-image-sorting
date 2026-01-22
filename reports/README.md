@@ -231,7 +231,8 @@ We used Ruff for both linting and formatting. We added type hints throughout our
 >
 > Answer:
 
-In total we have implemented 28 unit tests. Primarily testing the most critical parts being *data*, *model* and *training*. We also tested the API client to validate endpoints, prediction behaviour, errors and model info. The data.py tests check for dataset instantiation, input shape, and several tests for the train/test split. The model.py tests are separated into tests regarding model initialization and model training. Initialization tests checks model instantiation and that the pretrained weights are frozen, while training tests check a loss is calculated and gradients are changed.
+In total we have implemented 17 unit tests primarily testing the most critical parts being *data*, *model* and *training*. We also tested the API client to validate endpoints, prediction behaviour, errors and model info. The data.py tests check for dataset instantiation, input shape, and several tests for the train/test split. The model.py tests are separated into tests regarding model initialization and model training. Initialization tests checks model instantiation and that the pretrained weights are frozen, while training tests check a loss is calculated and gradients are changed.
+
 
 ### Question 8
 
@@ -245,6 +246,9 @@ In total we have implemented 28 unit tests. Primarily testing the most critical 
 > *code and even if we were then...*
 >
 > Answer:
+
+The total code coverage is 52% of the source code. It's far from 100% coverage, with varying coverage by module. A coverage of less than 100% is expected as fx model.py has code that only runs in a PyTorch Lightning Trainer and is therefore intentionally not run in our isolated unit tests, where we assume the developers of the library have tested their code extensively themselves. The same is true for logger statements in the data.py tests. Achieving close to 100% coverage would require very extensive tests, which might provide little additional value. Even with perfect coverage, we still couldn’t assume the code is error‑free, as coverage only measures if lines are run, and not whether they behave correctly. 
+
 
 
 
