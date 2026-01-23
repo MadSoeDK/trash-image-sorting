@@ -58,7 +58,7 @@ will check the repositories and the code to verify your answers.
 * [x] Create the initial file structure using cookiecutter with an appropriate template (M6)
 * [x] Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
 * [x] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
-* [ ] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
+* [x] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
     are using (M2+M6)
 * [x] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 * [x] Do a bit of code typing and remember to document essential parts of your code (M7)
@@ -101,7 +101,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Deploy to the cloud a drift detection API (M27)
 * [ ] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
-* [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
+* [x] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
 * [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
@@ -111,7 +111,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
 * [x] Revisit your initial project description. Did the project turn out as you wanted?
-* [ ] Create an architectural diagram over your MLOps pipeline
+* [x] Create an architectural diagram over your MLOps pipeline
 * [x] Make sure all group members have an understanding about all parts of the project
 * [x] Uploaded all your code to GitHub
 
@@ -247,7 +247,7 @@ In total we have implemented 17 unit tests primarily testing the most critical p
 >
 > Answer:
 
-The total code coverage is 52% of the source code. It's far from 100% coverage, with varying coverage by module (see image below). A coverage of less than 100% is expected as fx model.py has code that only runs in a PyTorch Lightning Trainer and is therefore intentionally not run in our isolated unit tests, where we assume the developers of the library have tested their code extensively themselves. The same is true for logger statements in the data.py tests. Achieving close to 100% coverage would require very extensive tests, which might provide little additional value. Even with perfect coverage, we still couldn’t assume the code is error‑free, as coverage only measures if lines are run, and not whether they behave correctly. 
+The total code coverage is 52% of the source code. It's far from 100% coverage, with varying coverage by module (see image below). A coverage of less than 100% is expected as fx model.py has code that only runs in a PyTorch Lightning Trainer and is therefore intentionally not run in our isolated unit tests, where we assume the developers of the library have tested their code extensively themselves. The same is true for logger statements in the data.py tests. Achieving close to 100% coverage would require very extensive tests, which might provide little additional value. Even with perfect coverage, we still couldn’t assume the code is error‑free, as coverage only measures if lines are run, and not whether they behave correctly.
 
 ![coverage_report_tests](figures/coverage_report_tests.png)
 
@@ -676,7 +676,7 @@ We could not get the student credits working, and it was not possible to request
 - Student s214964 managed DVC for data versioning and remote storage (Google Cloud Storage), wrote unit tests for data loading/preprocessing, configured integrations and load testing, as well as setting up various CI workflows.
 - Student s234855 was in charge of profiling ``train.py``, analyzing the results, and implementating changes to improve execution time. Also developed the unit tests for the ``model.py``.
 
- 
+
 All members contributed to code by participating in code reviews, discussions, and collaboratively debugging issues that arose during development.
 
 We have used AI to some extent to help debug our code and generate documentation for our API. Additionally, we used AI to assist in writing boilerplate code and speeding up the development of certain functions. All code (AI or human-written) has been reviewed by other team member(s) to ensure quality and correctness before being merged into the main branch.
