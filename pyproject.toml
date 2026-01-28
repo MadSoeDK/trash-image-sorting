@@ -31,7 +31,7 @@ dependencies = [
     "timm>=1.0.12",
     "torch==2.6.0",
     "torchvision==0.21.0",
-    "typer==0.15.1",
+    "typer==0.21.1",
     "uvicorn==0.34.0",
     "wandb>=0.23.1",
     "dvc-gs>=3.0.2",
